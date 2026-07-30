@@ -1,5 +1,7 @@
 # Ecommerce Admin Dashboard
 
+> Repository: https://github.com/Tanvir284/ecommerce-admin-dashboard
+
 A complete, enterprise-grade **Ecommerce Admin Dashboard** backend and frontend system built for Trends Bird Limited Backend Developer Intern assignment.
 
 ## 🚀 Key Features & Architectural Highlights
