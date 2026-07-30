@@ -1,0 +1,253 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum RoleStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum AttributeType {
+  DROPDOWN
+  RADIO
+  CHECKBOX
+  COLOUR_SWATCH
+  IMAGE_SWATCH
+}
+
+enum StockStatus {
+  IN_STOCK
+  OUT_OF_STOCK
+  LOW_STOCK
+}
+
+model PermissionGroup {
+  id          String       @id @default(uuid())
+  name        String       @unique
+  description String?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  permissions Permission[]
+}
+
+model Permission {
+  id          String          @id @default(uuid())
+  name        String          @unique // e.g. product:create
+  description String?
+  groupId     String
+  group       PermissionGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  roles       RolePermission[]
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+}
+
+model Role {
+  id          String           @id @default(uuid())
+  name        String           @unique
+  description String?
+  status      RoleStatus       @default(ACTIVE)
+  permissions RolePermission[]
+  users       User[]
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+}
+
+model RolePermission {
+  roleId       String
+  permissionId String
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@id([roleId, permissionId])
+}
+
+model User {
+  id            String         @id @default(uuid())
+  name          String
+  email         String         @unique
+  password      String
+  phone         String?
+  gender        String?
+  avatar        String?
+  roleId        String
+  role          Role           @relation(fields: [roleId], references: [id], onDelete: Restrict)
+  isActive      Boolean        @default(true)
+  refreshTokens RefreshToken[]
+  mediaUploaded Media[]
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  isRevoked Boolean  @default(false)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}
+
+model Media {
+  id               String            @id @default(uuid())
+  fileName         String
+  storedPath       String
+  publicUrl        String
+  mimeType         String
+  type             String            // image or video
+  size             Int               // in bytes
+  width            Int?
+  height           Int?
+  thumbnailUrl     String?
+  altText          String?
+  title            String?
+  uploadedById     String
+  uploadedBy       User              @relation(fields: [uploadedById], references: [id], onDelete: Restrict)
+  categories       Category[]
+  brands           Brand[]
+  attributeValues  AttributeValue[]
+  mediaAttachments MediaAttachment[]
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+}
+
+model Category {
+  id          String            @id @default(uuid())
+  name        String
+  slug        String            @unique
+  description String?
+  imageId     String?
+  image       Media?            @relation(fields: [imageId], references: [id], onDelete: SetNull)
+  parentId    String?
+  parent      Category?         @relation("CategoryHierarchy", fields: [parentId], references: [id], onDelete: Restrict)
+  children    Category[]        @relation("CategoryHierarchy")
+  isActive    Boolean           @default(true)
+  sortOrder   Int               @default(0)
+  products    ProductCategory[]
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+}
+
+model Brand {
+  id          String    @id @default(uuid())
+  name        String    @unique
+  slug        String    @unique
+  logoId      String?
+  logo        Media?    @relation(fields: [logoId], references: [id], onDelete: SetNull)
+  status      String    @default("ACTIVE")
+  description String?
+  products    Product[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Attribute {
+  id        String           @id @default(uuid())
+  name      String           @unique
+  slug      String           @unique
+  type      AttributeType    @default(DROPDOWN)
+  values    AttributeValue[]
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+}
+
+model AttributeValue {
+  id             String                  @id @default(uuid())
+  attributeId    String
+  attribute      Attribute               @relation(fields: [attributeId], references: [id], onDelete: Cascade)
+  value          String
+  slug           String
+  hexCode        String?
+  mediaId        String?
+  media          Media?                  @relation(fields: [mediaId], references: [id], onDelete: SetNull)
+  variantValues  VariantAttributeValue[]
+  attachments    MediaAttachment[]
+  createdAt      DateTime                @default(now())
+  updatedAt      DateTime                @updatedAt
+
+  @@unique([attributeId, value])
+  @@unique([attributeId, slug])
+}
+
+model Product {
+  id               String            @id @default(uuid())
+  name             String
+  slug             String            @unique
+  sku              String?           @unique
+  shortDescription String?
+  longDescription  String?
+  hasVariants      Boolean           @default(false)
+  price            Float?
+  salePrice        Float?
+  stock            Int?              @default(0)
+  stockStatus      StockStatus?
+  weight           Float?
+  isActive         Boolean           @default(true)
+  isFeatured       Boolean           @default(false)
+  sortOrder        Int               @default(0)
+  brandId          String?
+  brand            Brand?            @relation(fields: [brandId], references: [id], onDelete: Restrict)
+  categories       ProductCategory[]
+  variants         ProductVariant[]
+  mediaAttachments MediaAttachment[]
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+}
+
+model ProductCategory {
+  productId  String
+  categoryId String
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+
+  @@id([productId, categoryId])
+}
+
+model ProductVariant {
+  id                String                  @id @default(uuid())
+  productId         String
+  product           Product                 @relation(fields: [productId], references: [id], onDelete: Cascade)
+  sku               String                  @unique
+  price             Float
+  salePrice         Float?
+  stock             Int                     @default(0)
+  stockStatus       StockStatus             @default(IN_STOCK)
+  lowStockThreshold Int                     @default(5)
+  weight            Float?
+  isActive          Boolean                 @default(true)
+  attributeValues   VariantAttributeValue[]
+  mediaAttachments  MediaAttachment[]
+  createdAt         DateTime                @default(now())
+  updatedAt         DateTime                @updatedAt
+}
+
+model VariantAttributeValue {
+  variantId        String
+  attributeValueId String
+  variant          ProductVariant @relation(fields: [variantId], references: [id], onDelete: Cascade)
+  attributeValue   AttributeValue @relation(fields: [attributeValueId], references: [id], onDelete: Restrict)
+
+  @@id([variantId, attributeValueId])
+}
+
+model MediaAttachment {
+  id               String          @id @default(uuid())
+  mediaId          String
+  media            Media           @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+  productId        String?
+  product          Product?        @relation(fields: [productId], references: [id], onDelete: Cascade)
+  variantId        String?
+  variant          ProductVariant? @relation(fields: [variantId], references: [id], onDelete: Cascade)
+  attributeValueId String?
+  attributeValue   AttributeValue? @relation(fields: [attributeValueId], references: [id], onDelete: Cascade)
+  isThumbnail      Boolean         @default(false)
+  isGallery        Boolean         @default(true)
+  sortOrder        Int             @default(0)
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+}
