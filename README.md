@@ -2,6 +2,11 @@
 
 > Repository: https://github.com/Tanvir284/ecommerce-admin-dashboard
 
+### 🌐 Live Deployment Links
+- **Frontend Dashboard (Vercel)**: [https://ecommerce-admin-dashboard-seven.vercel.app](https://ecommerce-admin-dashboard-seven.vercel.app)
+- **Backend REST API (Render)**: `https://ecommerce-admin-dashboard-9f2i.onrender.com`
+- **Swagger OpenAPI Docs**: `https://ecommerce-admin-dashboard-9f2i.onrender.com/api/docs`
+
 A complete, enterprise-grade **Ecommerce Admin Dashboard** backend and frontend system built for Trends Bird Limited Backend Developer Intern assignment.
 
 ## 🚀 Key Features & Architectural Highlights
