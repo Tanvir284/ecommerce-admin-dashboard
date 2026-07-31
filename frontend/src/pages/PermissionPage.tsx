@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { api } from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import { Plus, Search, KeyRound, AlertTriangle, ShieldCheck, Trash2 } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 interface Permission {
   id: string;
@@ -115,7 +116,7 @@ export const PermissionPage: React.FC = () => {
 
   if (forbiddenError) {
     return (
-      <div className="p-8 bg-red-500/10 border border-red-500/20 rounded-2xl flex items-center gap-4 text-red-400">
+      <div className="p-8 bg-red-50 border border-red-200 rounded-2xl flex items-center gap-4 text-red-700">
         <AlertTriangle className="w-8 h-8 shrink-0" />
         <div>
           <h3 className="font-bold text-lg">403 Forbidden Access</h3>
@@ -126,14 +127,16 @@ export const PermissionPage: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div className="space-y-8 max-w-7xl mx-auto">
+      
+      {/* Header Area */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-100 flex items-center gap-3">
-            <KeyRound className="w-6 h-6 text-emerald-400" />
-            Permission Vocabulary
+          <h1 className="text-3xl font-extrabold text-gray-100 flex items-center gap-3 drop-shadow-sm">
+            <KeyRound className="w-8 h-8 text-[#00e676]" />
+            <span className="bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-700">Permission Vocabulary</span>
           </h1>
-          <p className="text-sm text-slate-400 mt-1">
+          <p className="text-[15px] text-gray-500 mt-2 font-medium">
             Defines module-by-action capability grid used by the access control system.
           </p>
         </div>
@@ -141,9 +144,9 @@ export const PermissionPage: React.FC = () => {
         {hasPermission('permission:create') && (
           <button
             onClick={() => setIsModalOpen(true)}
-            className="flex items-center gap-2 px-4 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-semibold rounded-xl transition-all shadow-lg shadow-emerald-500/20 text-sm"
+            className="flex items-center gap-2 px-5 py-2.5 bg-[#00e676] hover:bg-[#00c853] text-[#0f172a] font-bold rounded-xl transition-all shadow-[0_4px_14px_0_rgba(0,230,118,0.39)] text-sm h-[42px]"
           >
-            <Plus className="w-4 h-4" />
+            <Plus className="w-4 h-4 font-bold" />
             Create Permission Group
           </button>
         )}
@@ -151,33 +154,38 @@ export const PermissionPage: React.FC = () => {
 
       {/* Search Input */}
       <div className="relative max-w-md">
-        <Search className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
+        <Search className="w-4 h-4 text-gray-400 absolute left-4 top-1/2 -translate-y-1/2" />
         <input
           type="text"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search module or permission..."
-          className="w-full bg-slate-900 border border-slate-800 focus:border-emerald-500 rounded-xl pl-10 pr-4 py-2.5 text-sm text-slate-100 placeholder-slate-500 outline-none"
+          className="w-full bg-[#111827] border border-[#1f2937] focus:border-[#00e676] rounded-xl pl-11 pr-4 py-3 text-sm text-gray-100 placeholder-gray-500 outline-none shadow-sm transition-colors"
         />
       </div>
 
       {/* Permission Matrix Grid */}
       {isLoading ? (
-        <div className="text-center py-12 text-slate-400">Loading permissions...</div>
+        <div className="text-center py-12 text-gray-400 font-medium">Loading permissions...</div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
           {groups.map((group) => (
-            <div key={group.id} className="bg-slate-900 border border-slate-800 rounded-2xl p-6 flex flex-col justify-between">
+            <motion.div 
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              key={group.id} 
+              className="bg-[#111827] rounded-[1.25rem] p-6 flex flex-col justify-between shadow-xl border border-[#1f2937]/50"
+            >
               <div>
-                <div className="flex items-center justify-between mb-3 border-b border-slate-800 pb-3">
+                <div className="flex items-start justify-between mb-4 pb-4 border-b border-[#1f2937]">
                   <div>
-                    <h3 className="font-bold text-slate-100 text-lg">{group.name}</h3>
-                    <p className="text-xs text-slate-400 mt-0.5">{group.description || 'Module group'}</p>
+                    <h3 className="font-bold text-white text-xl tracking-tight">{group.name}</h3>
+                    <p className="text-[13px] text-gray-400 mt-1 font-medium">{group.description || 'Module group'}</p>
                   </div>
                   {hasPermission('permission:delete') && (
                     <button
                       onClick={() => handleDeleteGroup(group.id, group.name)}
-                      className="p-2 text-slate-500 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
+                      className="p-1.5 text-gray-500 hover:text-red-400 rounded-lg transition-colors mt-0.5"
                       title="Delete Group"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -185,43 +193,47 @@ export const PermissionPage: React.FC = () => {
                   )}
                 </div>
 
-                <div className="space-y-2">
+                <div className="space-y-2.5">
                   {group.permissions.map((perm) => (
                     <div
                       key={perm.id}
-                      className="flex items-center justify-between p-2 rounded-lg bg-slate-950/60 border border-slate-800/80 text-xs"
+                      className="flex items-center justify-between px-3.5 py-2.5 rounded-lg bg-[#0b0f19] border border-[#1f2937] text-[13px]"
                     >
-                      <span className="font-mono text-emerald-400 font-medium">{perm.name}</span>
-                      <span className="text-slate-400">{perm.description}</span>
+                      <span className="font-mono text-[#00e676] font-semibold tracking-wide">{perm.name}</span>
+                      <span className="text-gray-400 font-medium truncate ml-4 text-right">{perm.description}</span>
                     </div>
                   ))}
                 </div>
               </div>
 
-              <div className="mt-4 pt-3 border-t border-slate-800/60 flex items-center justify-between text-[11px] text-slate-500">
+              <div className="mt-6 pt-4 border-t border-[#1f2937] flex items-center justify-between text-xs text-gray-500 font-medium tracking-wide">
                 <span>{group.permissions.length} Action(s)</span>
                 <span className="font-mono">Module: {group.name.toLowerCase()}</span>
               </div>
-            </div>
+            </motion.div>
           ))}
         </div>
       )}
 
       {/* Modal for Creating Permission Group */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 w-full max-w-lg shadow-2xl">
-            <h2 className="text-xl font-bold text-slate-100 mb-4">Create Permission Group</h2>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-[#111827] border border-[#1f2937] rounded-[1.5rem] p-7 w-full max-w-lg shadow-2xl"
+          >
+            <h2 className="text-xl font-bold text-white mb-6 tracking-tight">Create Permission Group</h2>
 
             {formError && (
-              <div className="mb-4 p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
+              <div className="mb-6 p-3.5 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm font-medium">
                 {formError}
               </div>
             )}
 
-            <form onSubmit={handleCreateGroup} className="space-y-4">
+            <form onSubmit={handleCreateGroup} className="space-y-5">
               <div>
-                <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
+                <label className="block text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-2">
                   Group Name (Module Name)
                 </label>
                 <input
@@ -230,12 +242,12 @@ export const PermissionPage: React.FC = () => {
                   value={groupName}
                   onChange={(e) => setGroupName(e.target.value)}
                   placeholder="e.g. Order"
-                  className="w-full bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-xl px-4 py-2.5 text-sm text-slate-100 outline-none"
+                  className="w-full bg-[#0b0f19] border border-[#1f2937] focus:border-[#00e676] rounded-xl px-4 py-3 text-sm text-white outline-none transition-colors shadow-inner"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
+                <label className="block text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-2">
                   Description
                 </label>
                 <input
@@ -243,35 +255,35 @@ export const PermissionPage: React.FC = () => {
                   value={groupDesc}
                   onChange={(e) => setGroupDesc(e.target.value)}
                   placeholder="Module capability description"
-                  className="w-full bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-xl px-4 py-2.5 text-sm text-slate-100 outline-none"
+                  className="w-full bg-[#0b0f19] border border-[#1f2937] focus:border-[#00e676] rounded-xl px-4 py-3 text-sm text-white outline-none transition-colors shadow-inner"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
+                <label className="block text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-2.5">
                   Select Actions
                 </label>
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-3 gap-2.5">
                   {standardActions.map((action) => (
                     <button
                       key={action}
                       type="button"
                       onClick={() => toggleAction(action)}
-                      className={`px-3 py-2 rounded-lg text-xs font-medium border transition-all text-left flex items-center justify-between ${
+                      className={`px-3 py-2.5 rounded-xl text-xs font-bold border transition-all text-left flex items-center justify-between ${
                         selectedActions.includes(action)
-                          ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-300'
-                          : 'bg-slate-950 border-slate-800 text-slate-400 hover:bg-slate-800'
+                          ? 'bg-[#00e676]/10 border-[#00e676]/30 text-[#00e676]'
+                          : 'bg-[#0b0f19] border-[#1f2937] text-gray-500 hover:text-gray-300'
                       }`}
                     >
                       <span>{action}</span>
-                      {selectedActions.includes(action) && <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />}
+                      {selectedActions.includes(action) && <ShieldCheck className="w-4 h-4 text-[#00e676]" />}
                     </button>
                   ))}
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
+                <label className="block text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-2">
                   Custom Action Name (Optional)
                 </label>
                 <input
@@ -279,28 +291,28 @@ export const PermissionPage: React.FC = () => {
                   value={customAction}
                   onChange={(e) => setCustomAction(e.target.value)}
                   placeholder="e.g. export, refund"
-                  className="w-full bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-xl px-4 py-2.5 text-sm text-slate-100 outline-none"
+                  className="w-full bg-[#0b0f19] border border-[#1f2937] focus:border-[#00e676] rounded-xl px-4 py-3 text-sm text-white outline-none transition-colors shadow-inner"
                 />
               </div>
 
-              <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-800">
+              <div className="flex items-center justify-end gap-3 pt-6 mt-6 border-t border-[#1f2937]">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 text-sm text-slate-400 hover:text-slate-200"
+                  className="px-5 py-2.5 text-sm font-semibold text-gray-400 hover:text-white transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isSaving}
-                  className="px-5 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-semibold rounded-xl text-sm transition-all"
+                  className="px-6 py-2.5 bg-[#00e676] hover:bg-[#00c853] text-[#0f172a] font-bold rounded-xl text-sm transition-all shadow-[0_4px_14px_0_rgba(0,230,118,0.39)]"
                 >
                   {isSaving ? 'Creating...' : 'Create Group'}
                 </button>
               </div>
             </form>
-          </div>
+          </motion.div>
         </div>
       )}
     </div>

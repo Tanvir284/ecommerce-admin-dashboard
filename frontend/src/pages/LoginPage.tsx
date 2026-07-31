@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { Sparkles, Lock, Mail, ArrowRight, ShieldCheck, UserCheck } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Command, ArrowRight } from 'lucide-react';
 
 export const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -21,7 +22,11 @@ export const LoginPage: React.FC = () => {
       await login(email, password);
       navigate('/');
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Invalid email or password');
+      if (err.message && err.message.includes('Network Error')) {
+        setError('Network error: Backend server is unreachable');
+      } else {
+        setError(err.message || 'Invalid email or password');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -38,101 +43,96 @@ export const LoginPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 flex items-center justify-center p-6 relative overflow-hidden font-sans selection:bg-indigo-500 selection:text-white">
-      {/* Background Decorative Glow Effects */}
-      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-indigo-600/20 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-600/20 rounded-full blur-3xl pointer-events-none" />
-
-      <div className="w-full max-w-md relative z-10">
-        {/* Logo and Heading */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500 shadow-xl shadow-indigo-500/30 mb-4">
-            <Sparkles className="w-8 h-8 text-white" />
+    <div className="min-h-screen bg-[#f7f9fc] flex items-center justify-center p-6 font-sans selection:bg-blue-100 selection:text-blue-900">
+      <div className="w-full max-w-[400px]">
+        <motion.div 
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+          className="flex flex-col items-center mb-8"
+        >
+          <div className="w-12 h-12 rounded-xl bg-black flex items-center justify-center shadow-sm mb-4">
+            <Command className="w-6 h-6 text-white" />
           </div>
-          <h1 className="text-3xl font-bold text-white tracking-tight">Trends Bird</h1>
-          <p className="text-sm text-slate-400 mt-1">Enterprise Ecommerce Admin Dashboard</p>
-        </div>
+          <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">
+            Log in to TrendsBird
+          </h1>
+          <p className="text-sm text-gray-500 mt-1">Welcome back! Please enter your details.</p>
+        </motion.div>
 
-        {/* Login Card */}
-        <div className="bg-slate-900/80 backdrop-blur-xl border border-slate-800/80 rounded-3xl p-8 shadow-2xl shadow-slate-950/80">
-          <h2 className="text-xl font-semibold text-white mb-6">Sign in to your account</h2>
-
+        <motion.div 
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.1 }}
+          className="bg-white border border-gray-200 rounded-2xl p-8 shadow-sm"
+        >
           {error && (
-            <div className="mb-6 p-4 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs font-medium flex items-center space-x-2">
-              <span>⚠️ {error}</span>
+            <div className="mb-6 p-3 rounded-lg bg-red-50 border border-red-100 text-red-600 text-sm flex items-start space-x-2">
+              <span>{error}</span>
             </div>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-5">
-            <div>
-              <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
-                Email Address
+            <div className="space-y-1.5">
+              <label className="block text-sm font-medium text-gray-700">
+                Email
               </label>
-              <div className="relative">
-                <Mail className="w-5 h-5 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                <input
-                  type="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="admin@admin.com"
-                  className="w-full bg-slate-800/60 border border-slate-700/60 rounded-xl pl-11 pr-4 py-3 text-sm text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all"
-                />
-              </div>
+              <input
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Enter your email"
+                className="w-full bg-white border border-gray-300 rounded-lg px-3.5 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all shadow-sm"
+              />
             </div>
 
-            <div>
-              <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
+            <div className="space-y-1.5">
+              <label className="block text-sm font-medium text-gray-700">
                 Password
               </label>
-              <div className="relative">
-                <Lock className="w-5 h-5 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                <input
-                  type="password"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  className="w-full bg-slate-800/60 border border-slate-700/60 rounded-xl pl-11 pr-4 py-3 text-sm text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all"
-                />
-              </div>
+              <input
+                type="password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                className="w-full bg-white border border-gray-300 rounded-lg px-3.5 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all shadow-sm"
+              />
             </div>
 
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-gradient-to-r from-indigo-600 via-indigo-500 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-semibold py-3.5 rounded-xl shadow-lg shadow-indigo-500/25 flex items-center justify-center space-x-2 transition-all duration-200 disabled:opacity-50"
+              className="w-full mt-2 bg-black hover:bg-gray-900 text-white font-medium py-2.5 rounded-lg shadow-sm flex items-center justify-center space-x-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <span>{isLoading ? 'Authenticating...' : 'Sign In'}</span>
+              <span className="text-sm">{isLoading ? 'Signing in...' : 'Sign in'}</span>
               {!isLoading && <ArrowRight className="w-4 h-4" />}
             </button>
           </form>
 
-          {/* Quick Credential Fill Section for Reviewers */}
-          <div className="mt-8 pt-6 border-t border-slate-800">
-            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3 text-center">
-              ⚡ Quick Fill Test Credentials
+          <div className="mt-8 pt-6 border-t border-gray-100">
+            <p className="text-xs text-gray-500 text-center mb-4">
+              Test Accounts
             </p>
             <div className="grid grid-cols-2 gap-3">
               <button
                 type="button"
                 onClick={setSuperAdmin}
-                className="flex items-center justify-center space-x-1.5 p-2.5 rounded-xl bg-slate-800/60 hover:bg-indigo-600/20 border border-slate-700/60 hover:border-indigo-500/40 text-xs font-medium text-slate-300 hover:text-white transition-all group"
+                className="px-3 py-2 rounded-lg bg-gray-50 hover:bg-gray-100 border border-gray-200 text-xs font-medium text-gray-700 transition-colors"
               >
-                <ShieldCheck className="w-4 h-4 text-indigo-400 group-hover:scale-110 transition-transform" />
-                <span>Super Admin</span>
+                Super Admin
               </button>
               <button
                 type="button"
                 onClick={setCatalogManager}
-                className="flex items-center justify-center space-x-1.5 p-2.5 rounded-xl bg-slate-800/60 hover:bg-purple-600/20 border border-slate-700/60 hover:border-purple-500/40 text-xs font-medium text-slate-300 hover:text-white transition-all group"
+                className="px-3 py-2 rounded-lg bg-gray-50 hover:bg-gray-100 border border-gray-200 text-xs font-medium text-gray-700 transition-colors"
               >
-                <UserCheck className="w-4 h-4 text-purple-400 group-hover:scale-110 transition-transform" />
-                <span>Catalog (403 Test)</span>
+                Catalog Manager
               </button>
             </div>
           </div>
-        </div>
+        </motion.div>
       </div>
     </div>
   );

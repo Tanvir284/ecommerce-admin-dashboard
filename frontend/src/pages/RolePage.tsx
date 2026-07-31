@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { api } from '../api/axios';
 import { useAuth } from '../context/AuthContext';
+import { useDebounce } from '../hooks/useDebounce';
 import { ShieldCheck, Plus, Search, Edit2, Trash2, Users, CheckSquare, Square, AlertTriangle } from 'lucide-react';
 
 interface Permission {
@@ -31,6 +32,7 @@ export const RolePage: React.FC = () => {
   const [roles, setRoles] = useState<Role[]>([]);
   const [permissionGroups, setPermissionGroups] = useState<PermissionGroup[]>([]);
   const [search, setSearch] = useState('');
+  const debouncedSearch = useDebounce(search, 400);
   const [isLoading, setIsLoading] = useState(true);
   const [forbiddenError, setForbiddenError] = useState<string | null>(null);
 
@@ -49,7 +51,7 @@ export const RolePage: React.FC = () => {
     setForbiddenError(null);
     try {
       const [rolesRes, permsRes]: any = await Promise.all([
-        api.get(`/role?search=${search}`),
+        api.get(`/role?search=${debouncedSearch}`),
         api.get('/permission'),
       ]);
       setRoles(rolesRes.roles || []);
@@ -65,7 +67,7 @@ export const RolePage: React.FC = () => {
 
   useEffect(() => {
     fetchData();
-  }, [search]);
+  }, [debouncedSearch]);
 
   const openCreateModal = () => {
     setEditingRoleId(null);

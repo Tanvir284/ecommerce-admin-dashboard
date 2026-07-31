@@ -29,7 +29,6 @@ export class AuthController {
     return this.authService.refreshToken(dto);
   }
 
-  @Public()
   @Post('logout')
   @HttpCode(HttpStatus.OK)
   logout(@GetUser('id') userId: string, @Body() dto: Partial<RefreshTokenDto>) {

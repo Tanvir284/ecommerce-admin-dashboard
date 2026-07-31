@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../api/axios';
 import { useAuth } from '../context/AuthContext';
+import { useDebounce } from '../hooks/useDebounce';
 import { Package, Plus, Search, Edit2, Trash2, AlertTriangle, Tag, Layers, Image as ImageIcon } from 'lucide-react';
 
 interface Category {
@@ -40,6 +41,7 @@ export const ProductListPage: React.FC = () => {
   const [brands, setBrands] = useState<Brand[]>([]);
 
   const [search, setSearch] = useState('');
+  const debouncedSearch = useDebounce(search, 400);
   const [categoryFilter, setCategoryFilter] = useState('');
   const [brandFilter, setBrandFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
@@ -53,7 +55,7 @@ export const ProductListPage: React.FC = () => {
     setForbiddenError(null);
     try {
       const queryParams = new URLSearchParams();
-      if (search) queryParams.append('search', search);
+      if (debouncedSearch) queryParams.append('search', debouncedSearch);
       if (categoryFilter) queryParams.append('categoryId', categoryFilter);
       if (brandFilter) queryParams.append('brandId', brandFilter);
       if (statusFilter) queryParams.append('status', statusFilter);
@@ -81,7 +83,7 @@ export const ProductListPage: React.FC = () => {
 
   useEffect(() => {
     fetchProducts();
-  }, [search, categoryFilter, brandFilter, statusFilter, page]);
+  }, [debouncedSearch, categoryFilter, brandFilter, statusFilter, page]);
 
   const handleDeleteProduct = async (id: string, name: string) => {
     if (!window.confirm(`Are you sure you want to delete product '${name}'?`)) return;

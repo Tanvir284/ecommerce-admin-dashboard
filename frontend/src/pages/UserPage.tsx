@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { api } from '../api/axios';
 import { useAuth } from '../context/AuthContext';
+import { useDebounce } from '../hooks/useDebounce';
 import { Users, Plus, Search, Edit2, Trash2, Shield, AlertTriangle, CheckCircle, XCircle } from 'lucide-react';
 
 interface Role {
@@ -27,6 +28,7 @@ export const UserPage: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [roles, setRoles] = useState<Role[]>([]);
   const [search, setSearch] = useState('');
+  const debouncedSearch = useDebounce(search, 400);
   const [roleFilter, setRoleFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [isLoading, setIsLoading] = useState(true);
@@ -50,7 +52,7 @@ export const UserPage: React.FC = () => {
     setForbiddenError(null);
     try {
       const queryParams = new URLSearchParams();
-      if (search) queryParams.append('search', search);
+      if (debouncedSearch) queryParams.append('search', debouncedSearch);
       if (roleFilter) queryParams.append('roleId', roleFilter);
       if (statusFilter) queryParams.append('isActive', statusFilter);
 
@@ -71,7 +73,7 @@ export const UserPage: React.FC = () => {
 
   useEffect(() => {
     fetchData();
-  }, [search, roleFilter, statusFilter]);
+  }, [debouncedSearch, roleFilter, statusFilter]);
 
   const openCreateModal = () => {
     setEditingUserId(null);

@@ -302,14 +302,168 @@ export class ProductService {
       throw new NotFoundException('Product not found');
     }
 
-    // Delete existing product and recreate atomically in transaction
+    const slug = dto.slug || dto.name
+      ? this.generateSlug(dto.name || existing.name, dto.slug)
+      : existing.slug;
+
+    if (slug !== existing.slug) {
+      const slugConflict = await this.prisma.product.findFirst({
+        where: { slug, id: { not: id } },
+      });
+      if (slugConflict) {
+        throw new ConflictException(`Product with slug '${slug}' already exists`);
+      }
+    }
+
+    // Validate variants if provided
+    if (dto.variants && dto.variants.length > 0) {
+      // Temporarily exclude current product's variant SKUs from uniqueness checks
+      const currentVariants = await this.prisma.productVariant.findMany({
+        where: { productId: id },
+        select: { sku: true },
+      });
+      const currentSkus = new Set(currentVariants.map((v) => v.sku.toLowerCase()));
+
+      const skuSet = new Set<string>();
+      for (const v of dto.variants) {
+        const skuLower = v.sku.trim().toLowerCase();
+        if (skuSet.has(skuLower)) {
+          throw new ConflictException(`Duplicate variant SKU '${v.sku}' in request`);
+        }
+        skuSet.add(skuLower);
+
+        if (!currentSkus.has(skuLower)) {
+          const existingDbVariant = await this.prisma.productVariant.findUnique({
+            where: { sku: v.sku.trim() },
+          });
+          if (existingDbVariant) {
+            throw new ConflictException(`Variant SKU '${v.sku}' is already in use`);
+          }
+        }
+
+        if (v.salePrice !== undefined && v.salePrice !== null && v.salePrice > v.price) {
+          throw new BadRequestException(
+            `Variant SKU '${v.sku}': Sale price cannot be greater than price`,
+          );
+        }
+      }
+    }
+
     return this.prisma.$transaction(async (tx) => {
+      // Clear existing relations for rebuild
       await tx.mediaAttachment.deleteMany({ where: { productId: id } });
       await tx.productCategory.deleteMany({ where: { productId: id } });
+      // Delete variant attribute values first, then variants
+      const variantIds = (await tx.productVariant.findMany({
+        where: { productId: id },
+        select: { id: true },
+      })).map((v) => v.id);
+      if (variantIds.length > 0) {
+        await tx.variantAttributeValue.deleteMany({ where: { variantId: { in: variantIds } } });
+      }
       await tx.productVariant.deleteMany({ where: { productId: id } });
-      await tx.product.delete({ where: { id } });
 
-      return this.create(dto);
+      const simpleStock = dto.stock !== undefined ? dto.stock : (existing.stock || 0);
+      const simpleStockStatus = !dto.hasVariants
+        ? this.deriveStockStatus(simpleStock)
+        : null;
+
+      // Update the product in-place (preserves ID)
+      await tx.product.update({
+        where: { id },
+        data: {
+          name: dto.name ? dto.name.trim() : existing.name,
+          slug,
+          sku: !dto.hasVariants && dto.sku ? dto.sku.trim() : (!dto.hasVariants ? existing.sku : null),
+          shortDescription: dto.shortDescription !== undefined ? dto.shortDescription : existing.shortDescription,
+          longDescription: dto.longDescription !== undefined ? dto.longDescription : existing.longDescription,
+          hasVariants: dto.hasVariants !== undefined ? dto.hasVariants : existing.hasVariants,
+          price: !dto.hasVariants ? (dto.price !== undefined ? dto.price : existing.price) : null,
+          salePrice: !dto.hasVariants ? (dto.salePrice !== undefined ? dto.salePrice : existing.salePrice) : null,
+          stock: !dto.hasVariants ? simpleStock : null,
+          stockStatus: simpleStockStatus,
+          weight: dto.weight !== undefined ? dto.weight : existing.weight,
+          isActive: dto.isActive !== undefined ? dto.isActive : existing.isActive,
+          isFeatured: dto.isFeatured !== undefined ? dto.isFeatured : existing.isFeatured,
+          sortOrder: dto.sortOrder !== undefined ? dto.sortOrder : existing.sortOrder,
+          brandId: dto.brandId !== undefined ? (dto.brandId || null) : existing.brandId,
+        },
+      });
+
+      // Re-attach Categories
+      if (dto.categoryIds && dto.categoryIds.length > 0) {
+        await tx.productCategory.createMany({
+          data: dto.categoryIds.map((catId) => ({
+            productId: id,
+            categoryId: catId,
+          })),
+        });
+      }
+
+      // Re-attach Product Level Media
+      if (dto.mediaAttachments && dto.mediaAttachments.length > 0) {
+        let hasThumbnail = false;
+        for (const ma of dto.mediaAttachments) {
+          const isThumb = !!ma.isThumbnail && !hasThumbnail;
+          if (isThumb) hasThumbnail = true;
+          await tx.mediaAttachment.create({
+            data: {
+              mediaId: ma.mediaId,
+              productId: id,
+              attributeValueId: ma.attributeValueId || null,
+              isThumbnail: isThumb,
+              isGallery: ma.isGallery !== undefined ? ma.isGallery : true,
+              sortOrder: ma.sortOrder || 0,
+            },
+          });
+        }
+      }
+
+      // Recreate Variants
+      if (dto.hasVariants && dto.variants) {
+        for (const v of dto.variants) {
+          const vStockStatus = this.deriveStockStatus(v.stock, v.lowStockThreshold || 5);
+          const variant = await tx.productVariant.create({
+            data: {
+              productId: id,
+              sku: v.sku.trim(),
+              price: v.price,
+              salePrice: v.salePrice || null,
+              stock: v.stock,
+              stockStatus: vStockStatus,
+              lowStockThreshold: v.lowStockThreshold || 5,
+              weight: v.weight || null,
+              isActive: v.isActive !== undefined ? v.isActive : true,
+            },
+          });
+
+          await tx.variantAttributeValue.createMany({
+            data: v.attributeValueIds.map((valId) => ({
+              variantId: variant.id,
+              attributeValueId: valId,
+            })),
+          });
+
+          if (v.mediaIds && v.mediaIds.length > 0) {
+            let variantThumbSet = false;
+            for (const mId of v.mediaIds) {
+              const isThumb = v.thumbnailMediaId === mId && !variantThumbSet;
+              if (isThumb) variantThumbSet = true;
+              await tx.mediaAttachment.create({
+                data: {
+                  mediaId: mId,
+                  productId: id,
+                  variantId: variant.id,
+                  isThumbnail: isThumb,
+                  isGallery: true,
+                },
+              });
+            }
+          }
+        }
+      }
+
+      return this.findOneInternal(id, tx);
     });
   }
 
