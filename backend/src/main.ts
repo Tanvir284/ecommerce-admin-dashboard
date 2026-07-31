@@ -11,11 +11,15 @@ async function bootstrap() {
   app.use(compression());
 
   // Enable CORS securely for frontend dashboard
+  const defaultOrigins = [
+    'http://localhost:5173',
+    'https://ecommerce-admin-dashboard-seven.vercel.app',
+  ];
   const corsOrigins = process.env.CORS_ORIGIN
     ? process.env.CORS_ORIGIN.split(',').map((o) => o.trim())
-    : ['http://localhost:5173'];
+    : defaultOrigins;
   app.enableCors({
-    origin: corsOrigins.length === 1 ? corsOrigins[0] : corsOrigins,
+    origin: corsOrigins,
     credentials: true,
   });
 
