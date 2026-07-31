@@ -226,8 +226,8 @@ export const DashboardPage: React.FC = () => {
               <span className="font-medium text-gray-900">PostgreSQL (5433)</span>
             </div>
             <div className="flex justify-between py-2 border-b border-gray-100">
-              <span className="text-gray-500">API Port</span>
-              <span className="font-medium text-gray-900">http://localhost:3000</span>
+              <span className="text-gray-500">API Gateway</span>
+              <span className="font-medium text-gray-900">NestJS Production REST API</span>
             </div>
             <div className="flex justify-between py-2">
               <span className="text-gray-500">Token Strategy</span>

@@ -4,6 +4,7 @@ import { api } from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import { useDebounce } from '../hooks/useDebounce';
 import { Package, Plus, Search, Edit2, Trash2, AlertTriangle, Tag, Layers, Image as ImageIcon } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 interface Category {
   id: string;
@@ -50,8 +51,8 @@ export const ProductListPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [forbiddenError, setForbiddenError] = useState<string | null>(null);
 
-  const fetchProducts = async () => {
-    setIsLoading(true);
+  const fetchProducts = async (isInitial = false) => {
+    if (isInitial && products.length === 0) setIsLoading(true);
     setForbiddenError(null);
     try {
       const queryParams = new URLSearchParams();
@@ -82,7 +83,7 @@ export const ProductListPage: React.FC = () => {
   };
 
   useEffect(() => {
-    fetchProducts();
+    fetchProducts(products.length === 0);
   }, [debouncedSearch, categoryFilter, brandFilter, statusFilter, page]);
 
   const handleDeleteProduct = async (id: string, name: string) => {
@@ -97,10 +98,10 @@ export const ProductListPage: React.FC = () => {
 
   if (forbiddenError) {
     return (
-      <div className="p-8 bg-red-500/10 border border-red-500/20 rounded-2xl flex items-center gap-4 text-red-400">
-        <AlertTriangle className="w-8 h-8 shrink-0" />
+      <div className="p-6 bg-red-50 border border-red-200 rounded-2xl flex items-start gap-4 text-red-700 shadow-sm">
+        <AlertTriangle className="w-6 h-6 shrink-0 mt-0.5" />
         <div>
-          <h3 className="font-bold text-lg">403 Forbidden Access</h3>
+          <h3 className="font-semibold text-base">403 Forbidden Access</h3>
           <p className="text-sm mt-1">{forbiddenError}</p>
         </div>
       </div>
@@ -111,11 +112,11 @@ export const ProductListPage: React.FC = () => {
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-100 flex items-center gap-3">
-            <Package className="w-6 h-6 text-emerald-400" />
+          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2.5">
+            <Package className="w-6 h-6 text-gray-900" />
             Product Catalog
           </h1>
-          <p className="text-sm text-slate-400 mt-1">
+          <p className="text-sm text-gray-500 mt-1">
             Browse, filter, and manage simple and variable products.
           </p>
         </div>
@@ -123,7 +124,7 @@ export const ProductListPage: React.FC = () => {
         {hasPermission('product:create') && (
           <Link
             to="/products/new"
-            className="flex items-center gap-2 px-4 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-semibold rounded-xl transition-all shadow-lg shadow-emerald-500/20 text-sm"
+            className="flex items-center gap-2 px-4 py-2.5 bg-black hover:bg-gray-800 text-white font-medium rounded-xl transition-all shadow-sm text-sm"
           >
             <Plus className="w-4 h-4" />
             Add New Product
@@ -131,23 +132,23 @@ export const ProductListPage: React.FC = () => {
         )}
       </div>
 
-      {/* Search and Filters Served by API */}
+      {/* Search and Filters */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="relative w-full">
-          <Search className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
+          <Search className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search by name or SKU..."
-            className="w-full bg-slate-900 border border-slate-800 focus:border-emerald-500 rounded-xl pl-10 pr-4 py-2.5 text-sm text-slate-100 placeholder-slate-500 outline-none"
+            className="w-full bg-white border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 rounded-xl pl-10 pr-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 outline-none shadow-sm transition-all"
           />
         </div>
 
         <select
           value={categoryFilter}
           onChange={(e) => setCategoryFilter(e.target.value)}
-          className="bg-slate-900 border border-slate-800 focus:border-emerald-500 rounded-xl px-4 py-2.5 text-sm text-slate-100 outline-none"
+          className="bg-white border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 rounded-xl px-4 py-2.5 text-sm text-gray-900 outline-none shadow-sm"
         >
           <option value="">All Categories</option>
           {categories.map((c) => (
@@ -160,7 +161,7 @@ export const ProductListPage: React.FC = () => {
         <select
           value={brandFilter}
           onChange={(e) => setBrandFilter(e.target.value)}
-          className="bg-slate-900 border border-slate-800 focus:border-emerald-500 rounded-xl px-4 py-2.5 text-sm text-slate-100 outline-none"
+          className="bg-white border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 rounded-xl px-4 py-2.5 text-sm text-gray-900 outline-none shadow-sm"
         >
           <option value="">All Brands</option>
           {brands.map((b) => (
@@ -173,7 +174,7 @@ export const ProductListPage: React.FC = () => {
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="bg-slate-900 border border-slate-800 focus:border-emerald-500 rounded-xl px-4 py-2.5 text-sm text-slate-100 outline-none"
+          className="bg-white border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 rounded-xl px-4 py-2.5 text-sm text-gray-900 outline-none shadow-sm"
         >
           <option value="">All Statuses</option>
           <option value="ACTIVE">ACTIVE</option>
@@ -182,37 +183,45 @@ export const ProductListPage: React.FC = () => {
       </div>
 
       {/* Paginated Product Table */}
-      {isLoading ? (
-        <div className="text-center py-12 text-slate-400">Loading products from API...</div>
+      {isLoading && products.length === 0 ? (
+        <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm animate-pulse space-y-4">
+          <div className="h-6 bg-gray-200 rounded w-1/4"></div>
+          <div className="h-12 bg-gray-100 rounded"></div>
+          <div className="h-12 bg-gray-100 rounded"></div>
+        </div>
+      ) : products.length === 0 ? (
+        <div className="text-center py-12 bg-white border border-gray-200 rounded-2xl text-gray-500 shadow-sm text-sm">
+          No products found in catalog.
+        </div>
       ) : (
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+        <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm text-slate-300">
-              <thead className="bg-slate-950/80 text-xs text-slate-400 uppercase tracking-wider border-b border-slate-800">
+            <table className="w-full text-left text-sm text-gray-700">
+              <thead className="bg-gray-50/80 text-xs text-gray-500 uppercase tracking-wider border-b border-gray-200 font-semibold">
                 <tr>
-                  <th className="px-6 py-4 font-semibold">Thumbnail & Product</th>
-                  <th className="px-6 py-4 font-semibold">Brand</th>
-                  <th className="px-6 py-4 font-semibold">Categories</th>
-                  <th className="px-6 py-4 font-semibold">Price / Range</th>
-                  <th className="px-6 py-4 font-semibold">Type & Stock</th>
-                  <th className="px-6 py-4 font-semibold text-right">Actions</th>
+                  <th className="px-6 py-3.5 font-semibold">Thumbnail & Product</th>
+                  <th className="px-6 py-3.5 font-semibold">Brand</th>
+                  <th className="px-6 py-3.5 font-semibold">Categories</th>
+                  <th className="px-6 py-3.5 font-semibold">Price / Range</th>
+                  <th className="px-6 py-3.5 font-semibold">Type & Stock</th>
+                  <th className="px-6 py-3.5 font-semibold text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800/60">
+              <tbody className="divide-y divide-gray-100">
                 {products.map((p) => (
-                  <tr key={p.id} className="hover:bg-slate-800/40 transition-colors">
+                  <tr key={p.id} className="hover:bg-gray-50/60 transition-colors">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-center overflow-hidden shrink-0">
+                        <div className="w-10 h-10 rounded-lg bg-gray-50 border border-gray-200 flex items-center justify-center overflow-hidden shrink-0">
                           {p.thumbnail ? (
                             <img src={p.thumbnail.publicUrl} alt={p.name} className="w-full h-full object-cover" />
                           ) : (
-                            <ImageIcon className="w-5 h-5 text-slate-600" />
+                            <ImageIcon className="w-4 h-4 text-gray-400" />
                           )}
                         </div>
                         <div>
-                          <p className="font-bold text-slate-100">{p.name}</p>
-                          <p className="text-xs text-slate-500 font-mono">
+                          <p className="font-semibold text-gray-900">{p.name}</p>
+                          <p className="text-xs text-gray-400 font-mono">
                             SKU: {p.sku || (p.hasVariants ? 'Variants SKU' : 'N/A')}
                           </p>
                         </div>
@@ -221,11 +230,11 @@ export const ProductListPage: React.FC = () => {
 
                     <td className="px-6 py-4">
                       {p.brand ? (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs bg-slate-950 text-indigo-400 border border-slate-800 font-medium">
-                          <Tag className="w-3 h-3" /> {p.brand.name}
+                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs bg-gray-100 text-gray-800 border border-gray-200 font-medium">
+                          <Tag className="w-3 h-3 text-gray-500" /> {p.brand.name}
                         </span>
                       ) : (
-                        <span className="text-slate-500 italic text-xs">No brand</span>
+                        <span className="text-gray-400 italic text-xs">No brand</span>
                       )}
                     </td>
 
@@ -233,39 +242,39 @@ export const ProductListPage: React.FC = () => {
                       <div className="flex flex-wrap gap-1">
                         {p.categories && p.categories.length > 0 ? (
                           p.categories.map((c) => (
-                            <span key={c.category.id} className="text-xs bg-slate-800 text-slate-300 px-2 py-0.5 rounded">
+                            <span key={c.category.id} className="text-xs bg-gray-100 text-gray-700 px-2 py-0.5 rounded font-medium border border-gray-200">
                               {c.category.name}
                             </span>
                           ))
                         ) : (
-                          <span className="text-slate-500 italic text-xs">Uncategorized</span>
+                          <span className="text-gray-400 italic text-xs">Uncategorized</span>
                         )}
                       </div>
                     </td>
 
-                    <td className="px-6 py-4 font-semibold text-emerald-400 font-mono">
+                    <td className="px-6 py-4 font-semibold text-gray-900 font-mono">
                       {p.priceRange}
                     </td>
 
                     <td className="px-6 py-4">
                       {p.hasVariants ? (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs bg-purple-500/10 text-purple-400 border border-purple-500/20 font-medium">
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs bg-purple-50 text-purple-700 border border-purple-200 font-medium">
                           <Layers className="w-3 h-3" /> Variable ({p.variants?.length || 0} variants)
                         </span>
                       ) : (
                         <div className="text-xs">
-                          <span className="text-slate-300 font-medium">Simple Product</span>
-                          <p className="text-slate-500">Stock: {p.stock || 0}</p>
+                          <span className="text-gray-900 font-medium">Simple Product</span>
+                          <p className="text-gray-500">Stock: {p.stock || 0}</p>
                         </div>
                       )}
                     </td>
 
                     <td className="px-6 py-4 text-right">
-                      <div className="flex items-center justify-end gap-2">
+                      <div className="flex items-center justify-end gap-1.5">
                         {hasPermission('product:update') && (
                           <Link
                             to={`/products/edit/${p.id}`}
-                            className="p-2 text-slate-400 hover:text-emerald-400 hover:bg-slate-800 rounded-lg transition-colors"
+                            className="p-1.5 text-gray-400 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
                             title="Edit Product"
                           >
                             <Edit2 className="w-4 h-4" />
@@ -274,7 +283,7 @@ export const ProductListPage: React.FC = () => {
                         {hasPermission('product:delete') && (
                           <button
                             onClick={() => handleDeleteProduct(p.id, p.name)}
-                            className="p-2 text-slate-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
+                            className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                             title="Delete Product"
                           >
                             <Trash2 className="w-4 h-4" />
@@ -289,20 +298,20 @@ export const ProductListPage: React.FC = () => {
           </div>
 
           {/* Pagination Controls */}
-          <div className="p-4 bg-slate-950/60 border-t border-slate-800 flex items-center justify-between text-xs text-slate-400">
+          <div className="p-4 bg-gray-50/60 border-t border-gray-200 flex items-center justify-between text-xs text-gray-500">
             <span>Page {page} of {totalPages}</span>
             <div className="flex items-center gap-2">
               <button
                 disabled={page <= 1}
                 onClick={() => setPage(page - 1)}
-                className="px-3 py-1.5 bg-slate-900 border border-slate-800 rounded-lg disabled:opacity-40 hover:bg-slate-800"
+                className="px-3 py-1.5 bg-white border border-gray-200 text-gray-700 font-medium rounded-lg disabled:opacity-40 hover:bg-gray-100 shadow-sm"
               >
                 Previous
               </button>
               <button
                 disabled={page >= totalPages}
                 onClick={() => setPage(page + 1)}
-                className="px-3 py-1.5 bg-slate-900 border border-slate-800 rounded-lg disabled:opacity-40 hover:bg-slate-800"
+                className="px-3 py-1.5 bg-white border border-gray-200 text-gray-700 font-medium rounded-lg disabled:opacity-40 hover:bg-gray-100 shadow-sm"
               >
                 Next
               </button>
@@ -313,3 +322,4 @@ export const ProductListPage: React.FC = () => {
     </div>
   );
 };
+

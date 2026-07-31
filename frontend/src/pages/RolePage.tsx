@@ -2,7 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { api } from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import { useDebounce } from '../hooks/useDebounce';
-import { ShieldCheck, Plus, Search, Edit2, Trash2, Users, CheckSquare, Square, AlertTriangle } from 'lucide-react';
+import { ShieldCheck, Plus, Search, Edit2, Trash2, Users, CheckSquare, Square, AlertTriangle, UserCog } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 interface Permission {
   id: string;
@@ -46,8 +47,8 @@ export const RolePage: React.FC = () => {
   const [formError, setFormError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
 
-  const fetchData = async () => {
-    setIsLoading(true);
+  const fetchData = async (isInitial = false) => {
+    if (isInitial && roles.length === 0) setIsLoading(true);
     setForbiddenError(null);
     try {
       const [rolesRes, permsRes]: any = await Promise.all([
@@ -66,7 +67,7 @@ export const RolePage: React.FC = () => {
   };
 
   useEffect(() => {
-    fetchData();
+    fetchData(roles.length === 0);
   }, [debouncedSearch]);
 
   const openCreateModal = () => {
@@ -146,10 +147,10 @@ export const RolePage: React.FC = () => {
 
   if (forbiddenError) {
     return (
-      <div className="p-8 bg-red-500/10 border border-red-500/20 rounded-2xl flex items-center gap-4 text-red-400">
-        <AlertTriangle className="w-8 h-8 shrink-0" />
+      <div className="p-6 bg-red-50 border border-red-200 rounded-2xl flex items-start gap-4 text-red-700 shadow-sm">
+        <AlertTriangle className="w-6 h-6 shrink-0 mt-0.5" />
         <div>
-          <h3 className="font-bold text-lg">403 Forbidden Access</h3>
+          <h3 className="font-semibold text-base">403 Forbidden Access</h3>
           <p className="text-sm mt-1">{forbiddenError}</p>
         </div>
       </div>
@@ -160,11 +161,11 @@ export const RolePage: React.FC = () => {
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-100 flex items-center gap-3">
-            <ShieldCheck className="w-6 h-6 text-emerald-400" />
+          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2.5">
+            <UserCog className="w-6 h-6 text-gray-900" />
             Role Management
           </h1>
-          <p className="text-sm text-slate-400 mt-1">
+          <p className="text-sm text-gray-500 mt-1">
             Bundles of permissions handed to users. Select permissions using module-by-action grid.
           </p>
         </div>
@@ -172,7 +173,7 @@ export const RolePage: React.FC = () => {
         {hasPermission('role:create') && (
           <button
             onClick={openCreateModal}
-            className="flex items-center gap-2 px-4 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-semibold rounded-xl transition-all shadow-lg shadow-emerald-500/20 text-sm"
+            className="flex items-center gap-2 px-4 py-2.5 bg-black hover:bg-gray-800 text-white font-medium rounded-xl transition-all shadow-sm text-sm"
           >
             <Plus className="w-4 h-4" />
             Create Role
@@ -181,57 +182,73 @@ export const RolePage: React.FC = () => {
       </div>
 
       <div className="relative max-w-md">
-        <Search className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
+        <Search className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
         <input
           type="text"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search roles..."
-          className="w-full bg-slate-900 border border-slate-800 focus:border-emerald-500 rounded-xl pl-10 pr-4 py-2.5 text-sm text-slate-100 placeholder-slate-500 outline-none"
+          className="w-full bg-white border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 rounded-xl pl-10 pr-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 outline-none shadow-sm transition-all"
         />
       </div>
 
-      {/* Role Cards Table */}
-      {isLoading ? (
-        <div className="text-center py-12 text-slate-400">Loading roles...</div>
+      {/* Role Cards Grid */}
+      {isLoading && roles.length === 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[1, 2, 3].map((n) => (
+            <div key={n} className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm animate-pulse space-y-4">
+              <div className="h-5 bg-gray-200 rounded w-1/3"></div>
+              <div className="h-4 bg-gray-100 rounded w-2/3"></div>
+            </div>
+          ))}
+        </div>
+      ) : roles.length === 0 ? (
+        <div className="text-center py-12 bg-white border border-gray-200 rounded-2xl text-gray-500 shadow-sm text-sm">
+          No roles found.
+        </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {roles.map((role) => (
-            <div key={role.id} className="bg-slate-900 border border-slate-800 rounded-2xl p-6 flex flex-col justify-between">
+            <motion.div 
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              key={role.id} 
+              className="bg-white border border-gray-200 rounded-2xl p-6 flex flex-col justify-between shadow-sm hover:shadow-md transition-shadow"
+            >
               <div>
-                <div className="flex items-center justify-between mb-3 border-b border-slate-800 pb-3">
+                <div className="flex items-center justify-between mb-3 border-b border-gray-100 pb-3">
                   <div>
-                    <h3 className="font-bold text-slate-100 text-lg flex items-center gap-2">
+                    <h3 className="font-semibold text-gray-900 text-lg flex items-center gap-2">
                       {role.name}
-                      <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${
+                      <span className={`text-[11px] px-2 py-0.5 rounded-full font-medium ${
                         role.status === 'ACTIVE'
-                          ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
-                          : 'bg-slate-800 text-slate-400'
+                          ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                          : 'bg-gray-100 text-gray-600 border border-gray-200'
                       }`}>
                         {role.status}
                       </span>
                     </h3>
-                    <p className="text-xs text-slate-400 mt-0.5">{role.description || 'No description'}</p>
+                    <p className="text-xs text-gray-500 mt-0.5">{role.description || 'No description'}</p>
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2 text-xs text-slate-400">
-                    <Users className="w-4 h-4 text-amber-400" />
-                    <span>Assigned Users: <strong className="text-slate-200">{role.userCount}</strong></span>
+                <div className="space-y-2 mt-4">
+                  <div className="flex items-center gap-2 text-xs text-gray-600">
+                    <Users className="w-4 h-4 text-gray-400" />
+                    <span>Assigned Users: <strong className="text-gray-900">{role.userCount}</strong></span>
                   </div>
-                  <div className="flex items-center gap-2 text-xs text-slate-400">
-                    <ShieldCheck className="w-4 h-4 text-emerald-400" />
-                    <span>Granted Permissions: <strong className="text-slate-200">{role.permissions.length}</strong></span>
+                  <div className="flex items-center gap-2 text-xs text-gray-600">
+                    <ShieldCheck className="w-4 h-4 text-gray-400" />
+                    <span>Granted Permissions: <strong className="text-gray-900">{role.permissions.length}</strong></span>
                   </div>
                 </div>
               </div>
 
-              <div className="mt-6 pt-4 border-t border-slate-800 flex items-center justify-end gap-2">
+              <div className="mt-6 pt-4 border-t border-gray-100 flex items-center justify-end gap-2">
                 {hasPermission('role:update') && (
                   <button
                     onClick={() => openEditModal(role)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-300 bg-slate-800 hover:bg-slate-700 rounded-lg transition-colors"
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
                   >
                     <Edit2 className="w-3.5 h-3.5" /> Edit Grid
                   </button>
@@ -239,38 +256,42 @@ export const RolePage: React.FC = () => {
                 {hasPermission('role:delete') && (
                   <button
                     onClick={() => handleDeleteRole(role.id, role.name)}
-                    className="p-1.5 text-slate-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
+                    className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                     title="Delete Role"
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>
                 )}
               </div>
-            </div>
+            </motion.div>
           ))}
         </div>
       )}
 
       {/* Modal for Creating / Editing Role Grid */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4 overflow-y-auto">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 w-full max-w-4xl shadow-2xl my-8">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-4 mb-6">
-              <h2 className="text-xl font-bold text-slate-100">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/40 backdrop-blur-sm p-4 overflow-y-auto">
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.96 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-white border border-gray-200 rounded-2xl p-6 w-full max-w-4xl shadow-xl my-8"
+          >
+            <div className="flex items-center justify-between border-b border-gray-100 pb-4 mb-6">
+              <h2 className="text-lg font-bold text-gray-900">
                 {editingRoleId ? `Edit Role: ${roleName}` : 'Create New Role'}
               </h2>
               <button
                 type="button"
                 onClick={toggleSelectAll}
-                className="flex items-center gap-2 px-3 py-1.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-lg text-xs font-medium hover:bg-emerald-500/20"
+                className="flex items-center gap-2 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-xs font-medium transition-colors"
               >
-                <CheckSquare className="w-4 h-4" />
+                <CheckSquare className="w-3.5 h-3.5" />
                 Select / Deselect All
               </button>
             </div>
 
             {formError && (
-              <div className="mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
+              <div className="mb-6 p-3.5 rounded-lg bg-red-50 border border-red-100 text-red-600 text-sm font-medium">
                 {formError}
               </div>
             )}
@@ -278,7 +299,7 @@ export const RolePage: React.FC = () => {
             <form onSubmit={handleSaveRole} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
+                  <label className="block text-xs font-medium text-gray-700 mb-1">
                     Role Name
                   </label>
                   <input
@@ -287,18 +308,18 @@ export const RolePage: React.FC = () => {
                     value={roleName}
                     onChange={(e) => setRoleName(e.target.value)}
                     placeholder="e.g. Sales Manager"
-                    className="w-full bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-xl px-4 py-2.5 text-sm text-slate-100 outline-none"
+                    className="w-full bg-white border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 rounded-lg px-3.5 py-2 text-sm text-gray-900 outline-none transition-all shadow-sm"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
+                  <label className="block text-xs font-medium text-gray-700 mb-1">
                     Status
                   </label>
                   <select
                     value={roleStatus}
                     onChange={(e: any) => setRoleStatus(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-xl px-4 py-2.5 text-sm text-slate-100 outline-none"
+                    className="w-full bg-white border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 rounded-lg px-3.5 py-2 text-sm text-gray-900 outline-none transition-all shadow-sm"
                   >
                     <option value="ACTIVE">ACTIVE</option>
                     <option value="INACTIVE">INACTIVE</option>
@@ -306,7 +327,7 @@ export const RolePage: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
+                  <label className="block text-xs font-medium text-gray-700 mb-1">
                     Description
                   </label>
                   <input
@@ -314,23 +335,23 @@ export const RolePage: React.FC = () => {
                     value={roleDesc}
                     onChange={(e) => setRoleDesc(e.target.value)}
                     placeholder="Role job function description"
-                    className="w-full bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-xl px-4 py-2.5 text-sm text-slate-100 outline-none"
+                    className="w-full bg-white border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 rounded-lg px-3.5 py-2 text-sm text-gray-900 outline-none transition-all shadow-sm"
                   />
                 </div>
               </div>
 
               {/* Module-by-Action Permission Grid */}
               <div>
-                <h3 className="text-sm font-semibold text-slate-300 mb-3">Module-by-Action Permissions Grid</h3>
+                <h3 className="text-sm font-semibold text-gray-900 mb-3">Module-by-Action Permissions Grid</h3>
 
-                <div className="space-y-4 max-h-[50vh] overflow-y-auto pr-2">
+                <div className="space-y-4 max-h-[45vh] overflow-y-auto pr-2 custom-scrollbar">
                   {permissionGroups.map((group) => (
-                    <div key={group.id} className="bg-slate-950 border border-slate-800/80 rounded-xl p-4">
-                      <div className="font-semibold text-slate-200 text-sm mb-3 border-b border-slate-800/60 pb-2">
+                    <div key={group.id} className="bg-gray-50 border border-gray-200 rounded-xl p-4">
+                      <div className="font-semibold text-gray-900 text-sm mb-3 pb-2 border-b border-gray-200">
                         {group.name} Module
                       </div>
 
-                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
+                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2.5">
                         {group.permissions.map((perm) => {
                           const isChecked = selectedPermIds.includes(perm.id);
                           return (
@@ -338,18 +359,18 @@ export const RolePage: React.FC = () => {
                               key={perm.id}
                               type="button"
                               onClick={() => togglePermission(perm.id)}
-                              className={`p-2.5 rounded-lg border text-xs text-left transition-all flex items-start gap-2.5 ${
+                              className={`p-2.5 rounded-lg border text-xs text-left transition-all flex items-center justify-between ${
                                 isChecked
-                                  ? 'bg-emerald-500/10 border-emerald-500/40 text-emerald-300'
-                                  : 'bg-slate-900 border-slate-800 text-slate-400 hover:bg-slate-800'
+                                  ? 'bg-blue-50 border-blue-200 text-blue-700 font-semibold'
+                                  : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-100'
                               }`}
                             >
-                              {isChecked ? (
-                                <CheckSquare className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-                              ) : (
-                                <Square className="w-4 h-4 text-slate-600 shrink-0 mt-0.5" />
-                              )}
                               <span className="font-mono">{perm.name.split(':')[1]}</span>
+                              {isChecked ? (
+                                <CheckSquare className="w-4 h-4 text-blue-600 shrink-0" />
+                              ) : (
+                                <Square className="w-4 h-4 text-gray-300 shrink-0" />
+                              )}
                             </button>
                           );
                         })}
@@ -359,26 +380,27 @@ export const RolePage: React.FC = () => {
                 </div>
               </div>
 
-              <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-800">
+              <div className="flex items-center justify-end gap-3 pt-5 border-t border-gray-100">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 text-sm text-slate-400 hover:text-slate-200"
+                  className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isSaving}
-                  className="px-5 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-semibold rounded-xl text-sm transition-all"
+                  className="px-5 py-2 bg-black hover:bg-gray-800 text-white font-medium rounded-lg text-sm transition-all shadow-sm"
                 >
                   {isSaving ? 'Saving...' : 'Save Role'}
                 </button>
               </div>
             </form>
-          </div>
+          </motion.div>
         </div>
       )}
     </div>
   );
 };
+

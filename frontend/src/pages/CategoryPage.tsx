@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { api } from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import { FolderTree, Plus, Edit2, Trash2, AlertTriangle, ChevronRight, Folder, Image as ImageIcon } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 interface Media {
   id: string;
@@ -44,8 +45,8 @@ export const CategoryPage: React.FC = () => {
   const [formError, setFormError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
 
-  const fetchData = async () => {
-    setIsLoading(true);
+  const fetchData = async (isInitial = false) => {
+    if (isInitial && tree.length === 0) setIsLoading(true);
     setForbiddenError(null);
     try {
       const [treeRes, flatRes, mediaRes]: any = await Promise.all([
@@ -66,7 +67,7 @@ export const CategoryPage: React.FC = () => {
   };
 
   useEffect(() => {
-    fetchData();
+    fetchData(tree.length === 0);
   }, []);
 
   const openCreateModal = () => {
@@ -139,31 +140,31 @@ export const CategoryPage: React.FC = () => {
   const renderTreeNode = (node: CategoryNode, depth = 0) => (
     <div key={node.id} className="space-y-2">
       <div
-        className="flex items-center justify-between p-3.5 bg-slate-900 border border-slate-800 rounded-xl hover:border-slate-700 transition-colors"
+        className="flex items-center justify-between p-3.5 bg-white border border-gray-200 rounded-xl hover:border-gray-300 shadow-sm transition-all"
         style={{ marginLeft: `${depth * 24}px` }}
       >
         <div className="flex items-center gap-3">
-          {depth > 0 && <ChevronRight className="w-4 h-4 text-slate-500 shrink-0" />}
-          <Folder className="w-4 h-4 text-teal-400 shrink-0" />
+          {depth > 0 && <ChevronRight className="w-4 h-4 text-gray-400 shrink-0" />}
+          <Folder className="w-4 h-4 text-gray-700 shrink-0" />
           <div>
             <div className="flex items-center gap-2">
-              <span className="font-bold text-slate-100 text-sm">{node.name}</span>
-              <span className="text-xs text-slate-500 font-mono">/{node.slug}</span>
+              <span className="font-semibold text-gray-900 text-sm">{node.name}</span>
+              <span className="text-xs text-gray-400 font-mono">/{node.slug}</span>
               {!node.isActive && (
-                <span className="text-[10px] bg-red-500/10 text-red-400 px-1.5 py-0.5 rounded">
+                <span className="text-[10px] bg-red-50 text-red-600 px-2 py-0.5 rounded border border-red-200 font-medium">
                   Inactive
                 </span>
               )}
             </div>
-            {node.description && <p className="text-xs text-slate-400 mt-0.5">{node.description}</p>}
+            {node.description && <p className="text-xs text-gray-500 mt-0.5">{node.description}</p>}
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5">
           {hasPermission('category:update') && (
             <button
               onClick={() => openEditModal(node)}
-              className="p-1.5 text-slate-400 hover:text-emerald-400 rounded-lg hover:bg-slate-800"
+              className="p-1.5 text-gray-400 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
               title="Edit Category"
             >
               <Edit2 className="w-4 h-4" />
@@ -172,7 +173,7 @@ export const CategoryPage: React.FC = () => {
           {hasPermission('category:delete') && (
             <button
               onClick={() => handleDeleteCategory(node.id, node.name)}
-              className="p-1.5 text-slate-400 hover:text-red-400 rounded-lg hover:bg-red-500/10"
+              className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
               title="Delete Category"
             >
               <Trash2 className="w-4 h-4" />
@@ -187,10 +188,10 @@ export const CategoryPage: React.FC = () => {
 
   if (forbiddenError) {
     return (
-      <div className="p-8 bg-red-500/10 border border-red-500/20 rounded-2xl flex items-center gap-4 text-red-400">
-        <AlertTriangle className="w-8 h-8 shrink-0" />
+      <div className="p-6 bg-red-50 border border-red-200 rounded-2xl flex items-start gap-4 text-red-700 shadow-sm">
+        <AlertTriangle className="w-6 h-6 shrink-0 mt-0.5" />
         <div>
-          <h3 className="font-bold text-lg">403 Forbidden Access</h3>
+          <h3 className="font-semibold text-base">403 Forbidden Access</h3>
           <p className="text-sm mt-1">{forbiddenError}</p>
         </div>
       </div>
@@ -201,11 +202,11 @@ export const CategoryPage: React.FC = () => {
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-100 flex items-center gap-3">
-            <FolderTree className="w-6 h-6 text-teal-400" />
+          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2.5">
+            <FolderTree className="w-6 h-6 text-gray-900" />
             Nested Category Tree
           </h1>
-          <p className="text-sm text-slate-400 mt-1">
+          <p className="text-sm text-gray-500 mt-1">
             Unlimited depth hierarchical category tree for organizing products.
           </p>
         </div>
@@ -213,7 +214,7 @@ export const CategoryPage: React.FC = () => {
         {hasPermission('category:create') && (
           <button
             onClick={openCreateModal}
-            className="flex items-center gap-2 px-4 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-semibold rounded-xl transition-all shadow-lg shadow-emerald-500/20 text-sm"
+            className="flex items-center gap-2 px-4 py-2.5 bg-black hover:bg-gray-800 text-white font-medium rounded-xl transition-all shadow-sm text-sm"
           >
             <Plus className="w-4 h-4" />
             Create Category
@@ -222,33 +223,40 @@ export const CategoryPage: React.FC = () => {
       </div>
 
       {/* Category Tree Display */}
-      {isLoading ? (
-        <div className="text-center py-12 text-slate-400">Loading category tree...</div>
+      {isLoading && tree.length === 0 ? (
+        <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm animate-pulse space-y-3">
+          <div className="h-10 bg-gray-100 rounded-xl"></div>
+          <div className="h-10 bg-gray-100 rounded-xl ml-6"></div>
+        </div>
       ) : tree.length === 0 ? (
-        <div className="text-center py-12 bg-slate-900 border border-slate-800 rounded-2xl text-slate-400">
+        <div className="text-center py-12 bg-white border border-gray-200 rounded-2xl text-gray-500 shadow-sm text-sm">
           No categories found. Click 'Create Category' to add one.
         </div>
       ) : (
-        <div className="space-y-3">{tree.map((node) => renderTreeNode(node, 0))}</div>
+        <div className="space-y-2.5">{tree.map((node) => renderTreeNode(node, 0))}</div>
       )}
 
       {/* Modal for Creating / Editing Category */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 w-full max-w-lg shadow-2xl">
-            <h2 className="text-xl font-bold text-slate-100 mb-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/40 backdrop-blur-sm p-4">
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.96 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-white border border-gray-200 rounded-2xl p-6 w-full max-w-lg shadow-xl"
+          >
+            <h2 className="text-lg font-bold text-gray-900 mb-4">
               {editingId ? 'Edit Category' : 'Create Category'}
             </h2>
 
             {formError && (
-              <div className="mb-4 p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
+              <div className="mb-4 p-3 rounded-lg bg-red-50 border border-red-100 text-red-600 text-sm font-medium">
                 {formError}
               </div>
             )}
 
             <form onSubmit={handleSaveCategory} className="space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">
+                <label className="block text-xs font-medium text-gray-700 mb-1">
                   Category Name
                 </label>
                 <input
@@ -257,13 +265,13 @@ export const CategoryPage: React.FC = () => {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="e.g. Android Phones"
-                  className="w-full bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-xl px-4 py-2.5 text-sm text-slate-100 outline-none"
+                  className="w-full bg-white border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 rounded-lg px-3.5 py-2 text-sm text-gray-900 outline-none transition-all shadow-sm"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">
+                  <label className="block text-xs font-medium text-gray-700 mb-1">
                     Slug (Auto-generated if empty)
                   </label>
                   <input
@@ -271,18 +279,18 @@ export const CategoryPage: React.FC = () => {
                     value={slug}
                     onChange={(e) => setSlug(e.target.value)}
                     placeholder="android-phones"
-                    className="w-full bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-xl px-4 py-2.5 text-sm text-slate-100 outline-none font-mono"
+                    className="w-full bg-white border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 rounded-lg px-3.5 py-2 text-sm text-gray-900 outline-none transition-all shadow-sm font-mono"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">
+                  <label className="block text-xs font-medium text-gray-700 mb-1">
                     Parent Category
                   </label>
                   <select
                     value={parentId}
                     onChange={(e) => setParentId(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-xl px-4 py-2.5 text-sm text-slate-100 outline-none"
+                    className="w-full bg-white border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 rounded-lg px-3.5 py-2 text-sm text-gray-900 outline-none transition-all shadow-sm"
                   >
                     <option value="">None (Top Level Root)</option>
                     {flatCategories
@@ -297,7 +305,7 @@ export const CategoryPage: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">
+                <label className="block text-xs font-medium text-gray-700 mb-1">
                   Description
                 </label>
                 <input
@@ -305,19 +313,19 @@ export const CategoryPage: React.FC = () => {
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="Category description"
-                  className="w-full bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-xl px-4 py-2.5 text-sm text-slate-100 outline-none"
+                  className="w-full bg-white border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 rounded-lg px-3.5 py-2 text-sm text-gray-900 outline-none transition-all shadow-sm"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">
+                  <label className="block text-xs font-medium text-gray-700 mb-1">
                     Image (Media Reference)
                   </label>
                   <select
                     value={imageId}
                     onChange={(e) => setImageId(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-xl px-4 py-2.5 text-sm text-slate-100 outline-none"
+                    className="w-full bg-white border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 rounded-lg px-3.5 py-2 text-sm text-gray-900 outline-none transition-all shadow-sm"
                   >
                     <option value="">No Image</option>
                     {mediaList.map((m) => (
@@ -329,38 +337,39 @@ export const CategoryPage: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">
+                  <label className="block text-xs font-medium text-gray-700 mb-1">
                     Sort Order
                   </label>
                   <input
                     type="number"
                     value={sortOrder}
                     onChange={(e) => setSortOrder(Number(e.target.value))}
-                    className="w-full bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-xl px-4 py-2.5 text-sm text-slate-100 outline-none"
+                    className="w-full bg-white border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 rounded-lg px-3.5 py-2 text-sm text-gray-900 outline-none transition-all shadow-sm"
                   />
                 </div>
               </div>
 
-              <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-800">
+              <div className="flex items-center justify-end gap-3 pt-5 border-t border-gray-100">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 text-sm text-slate-400 hover:text-slate-200"
+                  className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isSaving}
-                  className="px-5 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-semibold rounded-xl text-sm transition-all"
+                  className="px-5 py-2 bg-black hover:bg-gray-800 text-white font-medium rounded-lg text-sm transition-all shadow-sm"
                 >
                   {isSaving ? 'Saving...' : 'Save Category'}
                 </button>
               </div>
             </form>
-          </div>
+          </motion.div>
         </div>
       )}
     </div>
   );
 };
+

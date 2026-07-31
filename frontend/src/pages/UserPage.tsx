@@ -3,6 +3,7 @@ import { api } from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import { useDebounce } from '../hooks/useDebounce';
 import { Users, Plus, Search, Edit2, Trash2, Shield, AlertTriangle, CheckCircle, XCircle } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 interface Role {
   id: string;
@@ -47,8 +48,8 @@ export const UserPage: React.FC = () => {
   const [formError, setFormError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
 
-  const fetchData = async () => {
-    setIsLoading(true);
+  const fetchData = async (isInitial = false) => {
+    if (isInitial && users.length === 0) setIsLoading(true);
     setForbiddenError(null);
     try {
       const queryParams = new URLSearchParams();
@@ -72,7 +73,7 @@ export const UserPage: React.FC = () => {
   };
 
   useEffect(() => {
-    fetchData();
+    fetchData(users.length === 0);
   }, [debouncedSearch, roleFilter, statusFilter]);
 
   const openCreateModal = () => {
@@ -152,10 +153,10 @@ export const UserPage: React.FC = () => {
 
   if (forbiddenError) {
     return (
-      <div className="p-8 bg-red-500/10 border border-red-500/20 rounded-2xl flex items-center gap-4 text-red-400">
-        <AlertTriangle className="w-8 h-8 shrink-0" />
+      <div className="p-6 bg-red-50 border border-red-200 rounded-2xl flex items-start gap-4 text-red-700 shadow-sm">
+        <AlertTriangle className="w-6 h-6 shrink-0 mt-0.5" />
         <div>
-          <h3 className="font-bold text-lg">403 Forbidden Access</h3>
+          <h3 className="font-semibold text-base">403 Forbidden Access</h3>
           <p className="text-sm mt-1">{forbiddenError}</p>
         </div>
       </div>
@@ -166,11 +167,11 @@ export const UserPage: React.FC = () => {
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-100 flex items-center gap-3">
-            <Users className="w-6 h-6 text-emerald-400" />
+          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2.5">
+            <Users className="w-6 h-6 text-gray-900" />
             Dashboard Users
           </h1>
-          <p className="text-sm text-slate-400 mt-1">
+          <p className="text-sm text-gray-500 mt-1">
             Manage dashboard accounts and assign job function roles. Self-escalation is prevented.
           </p>
         </div>
@@ -178,7 +179,7 @@ export const UserPage: React.FC = () => {
         {hasPermission('user:create') && (
           <button
             onClick={openCreateModal}
-            className="flex items-center gap-2 px-4 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-semibold rounded-xl transition-all shadow-lg shadow-emerald-500/20 text-sm"
+            className="flex items-center gap-2 px-4 py-2.5 bg-black hover:bg-gray-800 text-white font-medium rounded-xl transition-all shadow-sm text-sm"
           >
             <Plus className="w-4 h-4" />
             Create User Account
@@ -189,20 +190,20 @@ export const UserPage: React.FC = () => {
       {/* Search and Filters */}
       <div className="flex flex-col sm:flex-row items-center gap-4">
         <div className="relative flex-1 w-full">
-          <Search className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
+          <Search className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search by name or email..."
-            className="w-full bg-slate-900 border border-slate-800 focus:border-emerald-500 rounded-xl pl-10 pr-4 py-2.5 text-sm text-slate-100 placeholder-slate-500 outline-none"
+            className="w-full bg-white border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 rounded-xl pl-10 pr-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 outline-none shadow-sm transition-all"
           />
         </div>
 
         <select
           value={roleFilter}
           onChange={(e) => setRoleFilter(e.target.value)}
-          className="bg-slate-900 border border-slate-800 focus:border-emerald-500 rounded-xl px-4 py-2.5 text-sm text-slate-100 outline-none w-full sm:w-48"
+          className="bg-white border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 rounded-xl px-4 py-2.5 text-sm text-gray-900 outline-none shadow-sm w-full sm:w-48"
         >
           <option value="">All Roles</option>
           {roles.map((r) => (
@@ -215,7 +216,7 @@ export const UserPage: React.FC = () => {
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="bg-slate-900 border border-slate-800 focus:border-emerald-500 rounded-xl px-4 py-2.5 text-sm text-slate-100 outline-none w-full sm:w-44"
+          className="bg-white border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 rounded-xl px-4 py-2.5 text-sm text-gray-900 outline-none shadow-sm w-full sm:w-44"
         >
           <option value="">All Statuses</option>
           <option value="true">Active Only</option>
@@ -224,67 +225,75 @@ export const UserPage: React.FC = () => {
       </div>
 
       {/* Users Table */}
-      {isLoading ? (
-        <div className="text-center py-12 text-slate-400">Loading users...</div>
+      {isLoading && users.length === 0 ? (
+        <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm animate-pulse space-y-4">
+          <div className="h-6 bg-gray-200 rounded w-1/4"></div>
+          <div className="h-10 bg-gray-100 rounded"></div>
+          <div className="h-10 bg-gray-100 rounded"></div>
+        </div>
+      ) : users.length === 0 ? (
+        <div className="text-center py-12 bg-white border border-gray-200 rounded-2xl text-gray-500 shadow-sm text-sm">
+          No user accounts found matching your filters.
+        </div>
       ) : (
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+        <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm text-slate-300">
-              <thead className="bg-slate-950/80 text-xs text-slate-400 uppercase tracking-wider border-b border-slate-800">
+            <table className="w-full text-left text-sm text-gray-700">
+              <thead className="bg-gray-50/80 text-xs text-gray-500 uppercase tracking-wider border-b border-gray-200 font-semibold">
                 <tr>
-                  <th className="px-6 py-4 font-semibold">User</th>
-                  <th className="px-6 py-4 font-semibold">Role</th>
-                  <th className="px-6 py-4 font-semibold">Phone</th>
-                  <th className="px-6 py-4 font-semibold">Status</th>
-                  <th className="px-6 py-4 font-semibold text-right">Actions</th>
+                  <th className="px-6 py-3.5 font-semibold">User</th>
+                  <th className="px-6 py-3.5 font-semibold">Role</th>
+                  <th className="px-6 py-3.5 font-semibold">Phone</th>
+                  <th className="px-6 py-3.5 font-semibold">Status</th>
+                  <th className="px-6 py-3.5 font-semibold text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800/60">
+              <tbody className="divide-y divide-gray-100">
                 {users.map((u) => (
-                  <tr key={u.id} className="hover:bg-slate-800/40 transition-colors">
+                  <tr key={u.id} className="hover:bg-gray-50/60 transition-colors">
                     <td className="px-6 py-4">
                       <div>
-                        <p className="font-bold text-slate-100 flex items-center gap-2">
+                        <p className="font-semibold text-gray-900 flex items-center gap-2">
                           {u.name}
                           {u.id === currentUser?.id && (
-                            <span className="text-[10px] bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 px-2 py-0.5 rounded-full">
+                            <span className="text-[10px] bg-blue-50 text-blue-700 border border-blue-200 px-2 py-0.5 rounded-full font-medium">
                               You
                             </span>
                           )}
                         </p>
-                        <p className="text-xs text-slate-400 font-mono mt-0.5">{u.email}</p>
+                        <p className="text-xs text-gray-500 font-mono mt-0.5">{u.email}</p>
                       </div>
                     </td>
 
                     <td className="px-6 py-4">
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                        <Shield className="w-3.5 h-3.5" />
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium bg-gray-100 text-gray-800 border border-gray-200">
+                        <Shield className="w-3.5 h-3.5 text-gray-500" />
                         {u.role?.name}
                       </span>
                     </td>
 
-                    <td className="px-6 py-4 text-xs font-mono text-slate-400">
+                    <td className="px-6 py-4 text-xs font-mono text-gray-500">
                       {u.phone || '—'}
                     </td>
 
                     <td className="px-6 py-4">
                       {u.isActive ? (
-                        <span className="inline-flex items-center gap-1 text-xs text-emerald-400 font-medium">
-                          <CheckCircle className="w-4 h-4" /> Active
+                        <span className="inline-flex items-center gap-1 text-xs text-emerald-700 font-medium bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-lg">
+                          <CheckCircle className="w-3.5 h-3.5" /> Active
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1 text-xs text-red-400 font-medium">
-                          <XCircle className="w-4 h-4" /> Inactive
+                        <span className="inline-flex items-center gap-1 text-xs text-red-700 font-medium bg-red-50 border border-red-200 px-2.5 py-1 rounded-lg">
+                          <XCircle className="w-3.5 h-3.5" /> Inactive
                         </span>
                       )}
                     </td>
 
                     <td className="px-6 py-4 text-right">
-                      <div className="flex items-center justify-end gap-2">
+                      <div className="flex items-center justify-end gap-1.5">
                         {hasPermission('user:update') && (
                           <button
                             onClick={() => openEditModal(u)}
-                            className="p-2 text-slate-400 hover:text-emerald-400 hover:bg-slate-800 rounded-lg transition-colors"
+                            className="p-1.5 text-gray-400 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
                             title="Edit User"
                           >
                             <Edit2 className="w-4 h-4" />
@@ -293,7 +302,7 @@ export const UserPage: React.FC = () => {
                         {hasPermission('user:delete') && u.id !== currentUser?.id && (
                           <button
                             onClick={() => handleDeleteUser(u.id, u.name)}
-                            className="p-2 text-slate-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
+                            className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                             title="Delete User"
                           >
                             <Trash2 className="w-4 h-4" />
@@ -311,21 +320,25 @@ export const UserPage: React.FC = () => {
 
       {/* User Create / Edit Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 w-full max-w-lg shadow-2xl">
-            <h2 className="text-xl font-bold text-slate-100 mb-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/40 backdrop-blur-sm p-4">
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.96 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-white border border-gray-200 rounded-2xl p-6 w-full max-w-lg shadow-xl"
+          >
+            <h2 className="text-lg font-bold text-gray-900 mb-4">
               {editingUserId ? 'Edit User Account' : 'Create User Account'}
             </h2>
 
             {formError && (
-              <div className="mb-4 p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
+              <div className="mb-4 p-3 rounded-lg bg-red-50 border border-red-100 text-red-600 text-sm font-medium">
                 {formError}
               </div>
             )}
 
             <form onSubmit={handleSaveUser} className="space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">
+                <label className="block text-xs font-medium text-gray-700 mb-1">
                   Full Name
                 </label>
                 <input
@@ -334,12 +347,12 @@ export const UserPage: React.FC = () => {
                   value={userName}
                   onChange={(e) => setUserName(e.target.value)}
                   placeholder="John Doe"
-                  className="w-full bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-xl px-4 py-2.5 text-sm text-slate-100 outline-none"
+                  className="w-full bg-white border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 rounded-lg px-3.5 py-2 text-sm text-gray-900 outline-none transition-all shadow-sm"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">
+                <label className="block text-xs font-medium text-gray-700 mb-1">
                   Email Address
                 </label>
                 <input
@@ -348,12 +361,12 @@ export const UserPage: React.FC = () => {
                   value={userEmail}
                   onChange={(e) => setUserEmail(e.target.value)}
                   placeholder="john@company.com"
-                  className="w-full bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-xl px-4 py-2.5 text-sm text-slate-100 outline-none"
+                  className="w-full bg-white border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 rounded-lg px-3.5 py-2 text-sm text-gray-900 outline-none transition-all shadow-sm"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">
+                <label className="block text-xs font-medium text-gray-700 mb-1">
                   {editingUserId ? 'New Password (leave blank to keep)' : 'Password'}
                 </label>
                 <input
@@ -361,20 +374,20 @@ export const UserPage: React.FC = () => {
                   value={userPassword}
                   onChange={(e) => setUserPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-xl px-4 py-2.5 text-sm text-slate-100 outline-none"
+                  className="w-full bg-white border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 rounded-lg px-3.5 py-2 text-sm text-gray-900 outline-none transition-all shadow-sm"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">
-                  Assigned Role (Required, Never Defaulted)
+                <label className="block text-xs font-medium text-gray-700 mb-1">
+                  Assigned Role
                 </label>
                 <select
                   required
                   disabled={editingUserId === currentUser?.id}
                   value={userRoleId}
                   onChange={(e) => setUserRoleId(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-xl px-4 py-2.5 text-sm text-slate-100 outline-none disabled:opacity-50"
+                  className="w-full bg-white border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 rounded-lg px-3.5 py-2 text-sm text-gray-900 outline-none transition-all shadow-sm disabled:opacity-50"
                 >
                   {roles.map((r) => (
                     <option key={r.id} value={r.id}>
@@ -383,7 +396,7 @@ export const UserPage: React.FC = () => {
                   ))}
                 </select>
                 {editingUserId === currentUser?.id && (
-                  <p className="text-[11px] text-amber-400 mt-1">
+                  <p className="text-[11px] text-amber-600 mt-1">
                     Self-escalation protection: You cannot alter your own role.
                   </p>
                 )}
@@ -391,7 +404,7 @@ export const UserPage: React.FC = () => {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">
+                  <label className="block text-xs font-medium text-gray-700 mb-1">
                     Phone
                   </label>
                   <input
@@ -399,19 +412,19 @@ export const UserPage: React.FC = () => {
                     value={userPhone}
                     onChange={(e) => setUserPhone(e.target.value)}
                     placeholder="+8801700000000"
-                    className="w-full bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-xl px-4 py-2.5 text-sm text-slate-100 outline-none"
+                    className="w-full bg-white border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 rounded-lg px-3.5 py-2 text-sm text-gray-900 outline-none transition-all shadow-sm"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">
+                  <label className="block text-xs font-medium text-gray-700 mb-1">
                     Account Status
                   </label>
                   <select
                     disabled={editingUserId === currentUser?.id}
                     value={userIsActive ? 'true' : 'false'}
                     onChange={(e) => setUserIsActive(e.target.value === 'true')}
-                    className="w-full bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-xl px-4 py-2.5 text-sm text-slate-100 outline-none disabled:opacity-50"
+                    className="w-full bg-white border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 rounded-lg px-3.5 py-2 text-sm text-gray-900 outline-none transition-all shadow-sm disabled:opacity-50"
                   >
                     <option value="true">Active</option>
                     <option value="false">Inactive</option>
@@ -419,26 +432,27 @@ export const UserPage: React.FC = () => {
                 </div>
               </div>
 
-              <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-800">
+              <div className="flex items-center justify-end gap-3 pt-5 border-t border-gray-100">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 text-sm text-slate-400 hover:text-slate-200"
+                  className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isSaving}
-                  className="px-5 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-semibold rounded-xl text-sm transition-all"
+                  className="px-5 py-2 bg-black hover:bg-gray-800 text-white font-medium rounded-lg text-sm transition-all shadow-sm"
                 >
                   {isSaving ? 'Saving...' : 'Save User'}
                 </button>
               </div>
             </form>
-          </div>
+          </motion.div>
         </div>
       )}
     </div>
   );
 };
+

@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { api } from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import { Package, ArrowLeft, Image as ImageIcon, Layers, CheckCircle2, AlertTriangle, Plus, Trash2, Tag, FolderTree } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 interface Category { id: string; name: string; }
 interface Brand { id: string; name: string; }
@@ -221,7 +222,12 @@ export const ProductFormPage: React.FC = () => {
   };
 
   if (isLoading) {
-    return <div className="text-center py-12 text-slate-400">Loading product editor...</div>;
+    return (
+      <div className="bg-white border border-gray-200 rounded-2xl p-8 shadow-sm animate-pulse space-y-4 max-w-5xl mx-auto">
+        <div className="h-6 bg-gray-200 rounded w-1/4"></div>
+        <div className="h-10 bg-gray-100 rounded"></div>
+      </div>
+    );
   }
 
   return (
@@ -229,31 +235,31 @@ export const ProductFormPage: React.FC = () => {
       <div className="flex items-center justify-between">
         <button
           onClick={() => navigate('/products')}
-          className="flex items-center gap-2 text-sm text-slate-400 hover:text-slate-200"
+          className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-900 transition-colors"
         >
           <ArrowLeft className="w-4 h-4" /> Back to Products
         </button>
-        <h1 className="text-2xl font-bold text-slate-100">
+        <h1 className="text-2xl font-bold text-gray-900">
           {id ? `Edit Product: ${name}` : 'Create New Product'}
         </h1>
       </div>
 
       {formError && (
-        <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm flex items-center gap-3">
+        <div className="p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm flex items-center gap-3 shadow-sm font-medium">
           <AlertTriangle className="w-5 h-5 shrink-0" />
           <span>{formError}</span>
         </div>
       )}
 
       {/* Form Tabs */}
-      <div className="flex items-center border-b border-slate-800 gap-2">
+      <div className="flex items-center border-b border-gray-200 gap-2">
         <button
           type="button"
           onClick={() => setActiveTab('details')}
           className={`px-5 py-3 text-sm font-semibold border-b-2 transition-all ${
             activeTab === 'details'
-              ? 'border-emerald-500 text-emerald-400'
-              : 'border-transparent text-slate-400 hover:text-slate-200'
+              ? 'border-black text-gray-900'
+              : 'border-transparent text-gray-400 hover:text-gray-700'
           }`}
         >
           1. General Details
@@ -264,8 +270,8 @@ export const ProductFormPage: React.FC = () => {
           onClick={() => setActiveTab('categories')}
           className={`px-5 py-3 text-sm font-semibold border-b-2 transition-all ${
             activeTab === 'categories'
-              ? 'border-emerald-500 text-emerald-400'
-              : 'border-transparent text-slate-400 hover:text-slate-200'
+              ? 'border-black text-gray-900'
+              : 'border-transparent text-gray-400 hover:text-gray-700'
           }`}
         >
           2. Brand & Categories ({selectedCategoryIds.length})
@@ -276,8 +282,8 @@ export const ProductFormPage: React.FC = () => {
           onClick={() => setActiveTab('media')}
           className={`px-5 py-3 text-sm font-semibold border-b-2 transition-all ${
             activeTab === 'media'
-              ? 'border-emerald-500 text-emerald-400'
-              : 'border-transparent text-slate-400 hover:text-slate-200'
+              ? 'border-black text-gray-900'
+              : 'border-transparent text-gray-400 hover:text-gray-700'
           }`}
         >
           3. Media Library ({selectedMediaIds.length})
@@ -288,8 +294,8 @@ export const ProductFormPage: React.FC = () => {
           onClick={() => setActiveTab('variants')}
           className={`px-5 py-3 text-sm font-semibold border-b-2 transition-all ${
             activeTab === 'variants'
-              ? 'border-emerald-500 text-emerald-400'
-              : 'border-transparent text-slate-400 hover:text-slate-200'
+              ? 'border-black text-gray-900'
+              : 'border-transparent text-gray-400 hover:text-gray-700'
           }`}
         >
           4. Variants Builder ({hasVariants ? variants.length : 'Simple'})
@@ -299,9 +305,9 @@ export const ProductFormPage: React.FC = () => {
       <form onSubmit={handleSaveProduct} className="space-y-6">
         {/* TAB 1: General Details */}
         {activeTab === 'details' && (
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4">
+          <div className="bg-white border border-gray-200 rounded-2xl p-6 space-y-4 shadow-sm">
             <div>
-              <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">
+              <label className="block text-xs font-medium text-gray-700 mb-1">
                 Product Name *
               </label>
               <input
@@ -310,13 +316,13 @@ export const ProductFormPage: React.FC = () => {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="e.g. Classic Cotton T-Shirt"
-                className="w-full bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-xl px-4 py-2.5 text-sm text-slate-100 outline-none"
+                className="w-full bg-white border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 rounded-lg px-3.5 py-2 text-sm text-gray-900 outline-none transition-all shadow-sm"
               />
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">
+                <label className="block text-xs font-medium text-gray-700 mb-1">
                   Slug (Auto-generated if empty)
                 </label>
                 <input
@@ -324,32 +330,32 @@ export const ProductFormPage: React.FC = () => {
                   value={slug}
                   onChange={(e) => setSlug(e.target.value)}
                   placeholder="classic-cotton-t-shirt"
-                  className="w-full bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-xl px-4 py-2.5 text-sm text-slate-100 outline-none font-mono"
+                  className="w-full bg-white border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 rounded-lg px-3.5 py-2 text-sm text-gray-900 outline-none transition-all shadow-sm font-mono"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">
+                <label className="block text-xs font-medium text-gray-700 mb-1">
                   Product Type
                 </label>
-                <div className="flex items-center gap-4 py-2">
-                  <label className="flex items-center gap-2 cursor-pointer text-sm">
+                <div className="flex items-center gap-6 py-2">
+                  <label className="flex items-center gap-2 cursor-pointer text-sm text-gray-700">
                     <input
                       type="radio"
                       name="hasVariants"
                       checked={!hasVariants}
                       onChange={() => setHasVariants(false)}
-                      className="text-emerald-500 focus:ring-emerald-500"
+                      className="text-black focus:ring-black"
                     />
                     <span>Simple Product</span>
                   </label>
-                  <label className="flex items-center gap-2 cursor-pointer text-sm">
+                  <label className="flex items-center gap-2 cursor-pointer text-sm text-gray-700">
                     <input
                       type="radio"
                       name="hasVariants"
                       checked={hasVariants}
                       onChange={() => setHasVariants(true)}
-                      className="text-emerald-500 focus:ring-emerald-500"
+                      className="text-black focus:ring-black"
                     />
                     <span>Variable Product (Has Variants)</span>
                   </label>
@@ -358,9 +364,9 @@ export const ProductFormPage: React.FC = () => {
             </div>
 
             {!hasVariants && (
-              <div className="p-4 bg-slate-950 border border-slate-800 rounded-xl grid grid-cols-4 gap-4">
+              <div className="p-4 bg-gray-50 border border-gray-200 rounded-xl grid grid-cols-4 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">
+                  <label className="block text-xs font-medium text-gray-700 mb-1">
                     SKU *
                   </label>
                   <input
@@ -369,12 +375,12 @@ export const ProductFormPage: React.FC = () => {
                     value={sku}
                     onChange={(e) => setSku(e.target.value)}
                     placeholder="SKU-1001"
-                    className="w-full bg-slate-900 border border-slate-800 focus:border-emerald-500 rounded-xl px-3 py-2 text-sm text-slate-100 outline-none font-mono"
+                    className="w-full bg-white border border-gray-300 focus:border-blue-500 rounded-lg px-3 py-1.5 text-sm text-gray-900 outline-none font-mono shadow-sm"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">
+                  <label className="block text-xs font-medium text-gray-700 mb-1">
                     Price ($) *
                   </label>
                   <input
@@ -384,12 +390,12 @@ export const ProductFormPage: React.FC = () => {
                     value={price}
                     onChange={(e) => setPrice(e.target.value === '' ? '' : Number(e.target.value))}
                     placeholder="99.99"
-                    className="w-full bg-slate-900 border border-slate-800 focus:border-emerald-500 rounded-xl px-3 py-2 text-sm text-slate-100 outline-none"
+                    className="w-full bg-white border border-gray-300 focus:border-blue-500 rounded-lg px-3 py-1.5 text-sm text-gray-900 outline-none shadow-sm"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">
+                  <label className="block text-xs font-medium text-gray-700 mb-1">
                     Sale Price ($)
                   </label>
                   <input
@@ -398,12 +404,12 @@ export const ProductFormPage: React.FC = () => {
                     value={salePrice}
                     onChange={(e) => setSalePrice(e.target.value === '' ? '' : Number(e.target.value))}
                     placeholder="79.99"
-                    className="w-full bg-slate-900 border border-slate-800 focus:border-emerald-500 rounded-xl px-3 py-2 text-sm text-slate-100 outline-none"
+                    className="w-full bg-white border border-gray-300 focus:border-blue-500 rounded-lg px-3 py-1.5 text-sm text-gray-900 outline-none shadow-sm"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">
+                  <label className="block text-xs font-medium text-gray-700 mb-1">
                     Stock Quantity *
                   </label>
                   <input
@@ -412,14 +418,14 @@ export const ProductFormPage: React.FC = () => {
                     value={stock}
                     onChange={(e) => setStock(e.target.value === '' ? '' : Number(e.target.value))}
                     placeholder="50"
-                    className="w-full bg-slate-900 border border-slate-800 focus:border-emerald-500 rounded-xl px-3 py-2 text-sm text-slate-100 outline-none"
+                    className="w-full bg-white border border-gray-300 focus:border-blue-500 rounded-lg px-3 py-1.5 text-sm text-gray-900 outline-none shadow-sm"
                   />
                 </div>
               </div>
             )}
 
             <div>
-              <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">
+              <label className="block text-xs font-medium text-gray-700 mb-1">
                 Short Summary Text
               </label>
               <input
@@ -427,12 +433,12 @@ export const ProductFormPage: React.FC = () => {
                 value={shortDesc}
                 onChange={(e) => setShortDesc(e.target.value)}
                 placeholder="Brief summary text"
-                className="w-full bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-xl px-4 py-2.5 text-sm text-slate-100 outline-none"
+                className="w-full bg-white border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 rounded-lg px-3.5 py-2 text-sm text-gray-900 outline-none transition-all shadow-sm"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">
+              <label className="block text-xs font-medium text-gray-700 mb-1">
                 Full Description (HTML / Text)
               </label>
               <textarea
@@ -440,7 +446,7 @@ export const ProductFormPage: React.FC = () => {
                 value={longDesc}
                 onChange={(e) => setLongDesc(e.target.value)}
                 placeholder="Full product detailed specifications"
-                className="w-full bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-xl p-4 text-sm text-slate-100 outline-none"
+                className="w-full bg-white border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 rounded-lg p-3 text-sm text-gray-900 outline-none transition-all shadow-sm"
               />
             </div>
           </div>
@@ -448,16 +454,16 @@ export const ProductFormPage: React.FC = () => {
 
         {/* TAB 2: Brand & Categories */}
         {activeTab === 'categories' && (
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-6">
+          <div className="bg-white border border-gray-200 rounded-2xl p-6 space-y-6 shadow-sm">
             <div>
-              <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2 flex items-center gap-2">
-                <Tag className="w-4 h-4 text-indigo-400" />
+              <label className="block text-xs font-medium text-gray-700 mb-2 flex items-center gap-2">
+                <Tag className="w-4 h-4 text-gray-700" />
                 Select Brand (At most 1 brand per product)
               </label>
               <select
                 value={brandId}
                 onChange={(e) => setBrandId(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-xl px-4 py-2.5 text-sm text-slate-100 outline-none max-w-md"
+                className="w-full bg-white border border-gray-300 focus:border-blue-500 rounded-lg px-3.5 py-2 text-sm text-gray-900 outline-none shadow-sm max-w-md"
               >
                 <option value="">No Brand Assigned</option>
                 {brands.map((b) => (
@@ -469,12 +475,12 @@ export const ProductFormPage: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2 flex items-center gap-2">
-                <FolderTree className="w-4 h-4 text-teal-400" />
+              <label className="block text-xs font-medium text-gray-700 mb-2 flex items-center gap-2">
+                <FolderTree className="w-4 h-4 text-gray-700" />
                 Attach Categories (Product can belong to many categories)
               </label>
 
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-3 max-h-60 overflow-y-auto p-4 bg-slate-950 border border-slate-800 rounded-xl">
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3 max-h-60 overflow-y-auto p-4 bg-gray-50 border border-gray-200 rounded-xl">
                 {categories.map((c) => {
                   const isChecked = selectedCategoryIds.includes(c.id);
                   return (
@@ -484,12 +490,12 @@ export const ProductFormPage: React.FC = () => {
                       onClick={() => toggleCategory(c.id)}
                       className={`p-3 rounded-xl border text-xs text-left transition-all flex items-center justify-between ${
                         isChecked
-                          ? 'bg-teal-500/20 border-teal-500/40 text-teal-300'
-                          : 'bg-slate-900 border-slate-800 text-slate-400 hover:bg-slate-800'
+                          ? 'bg-blue-50 border-blue-300 text-blue-900 font-semibold'
+                          : 'bg-white border-gray-200 text-gray-600 hover:border-gray-300'
                       }`}
                     >
                       <span>{c.name}</span>
-                      {isChecked && <CheckCircle2 className="w-4 h-4 text-teal-400" />}
+                      {isChecked && <CheckCircle2 className="w-4 h-4 text-blue-600" />}
                     </button>
                   );
                 })}
@@ -500,15 +506,15 @@ export const ProductFormPage: React.FC = () => {
 
         {/* TAB 3: Media Library Picker & Thumbnail Selector */}
         {activeTab === 'media' && (
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4">
+          <div className="bg-white border border-gray-200 rounded-2xl p-6 space-y-4 shadow-sm">
             <div>
-              <h3 className="text-sm font-semibold text-slate-200 mb-1">Product Gallery & Thumbnail Selector</h3>
-              <p className="text-xs text-slate-400 mb-4">
+              <h3 className="text-sm font-semibold text-gray-900 mb-1">Product Gallery & Thumbnail Selector</h3>
+              <p className="text-xs text-gray-500 mb-4">
                 Click media assets from the shared library to attach them. Exactly one media asset will serve as main thumbnail.
               </p>
             </div>
 
-            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3 max-h-80 overflow-y-auto p-4 bg-slate-950 border border-slate-800 rounded-xl">
+            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3 max-h-80 overflow-y-auto p-4 bg-gray-50 border border-gray-200 rounded-xl">
               {mediaList.map((m) => {
                 const isAttached = selectedMediaIds.includes(m.id);
                 const isThumb = thumbnailMediaId === m.id;
@@ -519,16 +525,16 @@ export const ProductFormPage: React.FC = () => {
                     onClick={() => toggleMedia(m.id)}
                     className={`relative aspect-square rounded-xl overflow-hidden cursor-pointer border-2 transition-all ${
                       isThumb
-                        ? 'border-amber-400 ring-2 ring-amber-400/20'
+                        ? 'border-amber-500 ring-2 ring-amber-500/20'
                         : isAttached
-                        ? 'border-emerald-500'
-                        : 'border-slate-800 opacity-60 hover:opacity-100'
+                        ? 'border-blue-600'
+                        : 'border-gray-200 opacity-60 hover:opacity-100'
                     }`}
                   >
                     <img src={m.publicUrl} alt={m.fileName} className="w-full h-full object-cover" />
 
                     {isAttached && (
-                      <div className="absolute top-1 right-1 bg-emerald-500 text-slate-950 p-1 rounded-full shadow">
+                      <div className="absolute top-1 right-1 bg-black text-white p-1 rounded-full shadow">
                         <CheckCircle2 className="w-3.5 h-3.5" />
                       </div>
                     )}
@@ -541,7 +547,7 @@ export const ProductFormPage: React.FC = () => {
                           setThumbnailMediaId(m.id);
                         }}
                         className={`absolute bottom-1 left-1 right-1 py-0.5 text-[9px] font-bold rounded text-center ${
-                          isThumb ? 'bg-amber-400 text-slate-950' : 'bg-slate-950/80 text-slate-300 hover:bg-amber-400 hover:text-slate-950'
+                          isThumb ? 'bg-amber-500 text-white' : 'bg-gray-900/80 text-white hover:bg-amber-500'
                         }`}
                       >
                         {isThumb ? '★ Thumbnail' : 'Set Thumb'}
@@ -556,21 +562,21 @@ export const ProductFormPage: React.FC = () => {
 
         {/* TAB 4: Variants Builder */}
         {activeTab === 'variants' && (
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-6">
+          <div className="bg-white border border-gray-200 rounded-2xl p-6 space-y-6 shadow-sm">
             {!hasVariants ? (
-              <div className="text-center py-8 text-slate-400">
+              <div className="text-center py-8 text-gray-500 text-sm">
                 This is marked as a <strong>Simple Product</strong>. Switch to <strong>Variable Product</strong> in General Details tab to build variants matrix.
               </div>
             ) : (
               <>
                 {/* Attribute Matrix Combination Generator */}
                 <div className="space-y-4">
-                  <h3 className="text-sm font-semibold text-slate-200">Select Participating Attributes & Values</h3>
+                  <h3 className="text-sm font-semibold text-gray-900">Select Participating Attributes & Values</h3>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {attributes.map((attr) => (
-                      <div key={attr.id} className="bg-slate-950 border border-slate-800 rounded-xl p-4">
-                        <span className="font-semibold text-slate-200 text-xs block mb-2">{attr.name}</span>
+                      <div key={attr.id} className="bg-gray-50 border border-gray-200 rounded-xl p-4">
+                        <span className="font-semibold text-gray-800 text-xs block mb-2">{attr.name}</span>
                         <div className="flex flex-wrap gap-2">
                           {attr.values.map((v) => {
                             const isSelected = (selectedAttrValueIds[attr.id] || []).includes(v.id);
@@ -581,8 +587,8 @@ export const ProductFormPage: React.FC = () => {
                                 onClick={() => toggleAttrValueSelection(attr.id, v.id)}
                                 className={`px-2.5 py-1 rounded-lg text-xs font-medium border transition-all ${
                                   isSelected
-                                    ? 'bg-purple-500/20 border-purple-500/40 text-purple-300'
-                                    : 'bg-slate-900 border-slate-800 text-slate-400'
+                                    ? 'bg-blue-50 border-blue-300 text-blue-900 font-semibold'
+                                    : 'bg-white border-gray-200 text-gray-600 hover:border-gray-300'
                                 }`}
                               >
                                 {v.value}
@@ -597,22 +603,22 @@ export const ProductFormPage: React.FC = () => {
                   <button
                     type="button"
                     onClick={generateCombinations}
-                    className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-slate-100 font-semibold text-xs rounded-xl transition-all"
+                    className="px-4 py-2 bg-black hover:bg-gray-800 text-white font-medium text-xs rounded-xl transition-all shadow-sm"
                   >
-                    ⚡ Produce Variant Matrix Combinations
+                    Produce Variant Matrix Combinations
                   </button>
                 </div>
 
                 {/* Variants List Table */}
                 {variants.length > 0 && (
                   <div className="space-y-3">
-                    <h3 className="text-sm font-semibold text-slate-200">Generated Product Variants ({variants.length})</h3>
+                    <h3 className="text-sm font-semibold text-gray-900">Generated Product Variants ({variants.length})</h3>
 
                     <div className="space-y-2">
                       {variants.map((v, i) => (
-                        <div key={i} className="p-4 bg-slate-950 border border-slate-800 rounded-xl grid grid-cols-4 gap-3 items-center">
+                        <div key={i} className="p-4 bg-gray-50 border border-gray-200 rounded-xl grid grid-cols-4 gap-3 items-center">
                           <div>
-                            <span className="text-[10px] text-slate-500 block font-mono">Variant #{i + 1}</span>
+                            <span className="text-[10px] text-gray-400 block font-mono">Variant #{i + 1}</span>
                             <input
                               type="text"
                               required
@@ -623,12 +629,12 @@ export const ProductFormPage: React.FC = () => {
                                 setVariants(updated);
                               }}
                               placeholder="SKU"
-                              className="w-full bg-slate-900 border border-slate-800 rounded px-2.5 py-1.5 text-xs font-mono text-slate-100"
+                              className="w-full bg-white border border-gray-300 rounded px-2.5 py-1.5 text-xs font-mono text-gray-900 shadow-sm"
                             />
                           </div>
 
                           <div>
-                            <span className="text-[10px] text-slate-500 block">Price ($) *</span>
+                            <span className="text-[10px] text-gray-500 block">Price ($) *</span>
                             <input
                               type="number"
                               step="0.01"
@@ -639,12 +645,12 @@ export const ProductFormPage: React.FC = () => {
                                 updated[i].price = Number(e.target.value);
                                 setVariants(updated);
                               }}
-                              className="w-full bg-slate-900 border border-slate-800 rounded px-2.5 py-1.5 text-xs text-slate-100"
+                              className="w-full bg-white border border-gray-300 rounded px-2.5 py-1.5 text-xs text-gray-900 shadow-sm"
                             />
                           </div>
 
                           <div>
-                            <span className="text-[10px] text-slate-500 block">Stock *</span>
+                            <span className="text-[10px] text-gray-500 block">Stock *</span>
                             <input
                               type="number"
                               required
@@ -654,7 +660,7 @@ export const ProductFormPage: React.FC = () => {
                                 updated[i].stock = Number(e.target.value);
                                 setVariants(updated);
                               }}
-                              className="w-full bg-slate-900 border border-slate-800 rounded px-2.5 py-1.5 text-xs text-slate-100"
+                              className="w-full bg-white border border-gray-300 rounded px-2.5 py-1.5 text-xs text-gray-900 shadow-sm"
                             />
                           </div>
 
@@ -662,7 +668,7 @@ export const ProductFormPage: React.FC = () => {
                             <button
                               type="button"
                               onClick={() => setVariants(variants.filter((_, idx) => idx !== i))}
-                              className="p-1.5 text-slate-500 hover:text-red-400 hover:bg-red-500/10 rounded"
+                              className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded"
                             >
                               <Trash2 className="w-4 h-4" />
                             </button>
@@ -677,23 +683,24 @@ export const ProductFormPage: React.FC = () => {
           </div>
         )}
 
-        <div className="flex items-center justify-end gap-4 pt-4 border-t border-slate-800">
+        <div className="flex items-center justify-end gap-4 pt-5 border-t border-gray-200">
           <button
             type="button"
             onClick={() => navigate('/products')}
-            className="px-5 py-2.5 text-sm text-slate-400 hover:text-slate-200"
+            className="px-5 py-2.5 text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors"
           >
             Cancel
           </button>
           <button
             type="submit"
             disabled={isSaving}
-            className="px-6 py-3 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold rounded-xl text-sm transition-all shadow-lg shadow-emerald-500/20"
+            className="px-6 py-2.5 bg-black hover:bg-gray-800 text-white font-medium rounded-xl text-sm transition-all shadow-sm"
           >
-            {isSaving ? 'Saving Product...' : 'Save Product (Atomic Transaction)'}
+            {isSaving ? 'Saving Product...' : 'Save Product'}
           </button>
         </div>
       </form>
     </div>
   );
 };
+
